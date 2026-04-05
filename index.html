@@ -1,0 +1,1377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NETI // Lab Trainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080c12;--bg2:#0d1117;--bg3:#131a24;--bg4:#1a2332;
+  --green:#00ff88;--green-dim:#00cc6a;--green-dark:#004d29;--green-glow:rgba(0,255,136,.12);
+  --cyan:#00e5ff;--cyan-dim:#00b8d4;
+  --amber:#ffab00;--amber-dim:#ff8f00;
+  --red:#ff3d71;--red-dim:#cc2952;
+  --purple:#b388ff;--purple-glow:rgba(179,136,255,.12);
+  --text:#c9d1d9;--text-dim:#6e7681;--text-bright:#e6edf3;
+  --border:#1c2333;--border-bright:#30363d;
+  --font-mono:'JetBrains Mono',monospace;
+  --font-display:'Outfit',sans-serif;
+}
+html{font-size:16px;scroll-behavior:smooth}
+body{font-family:var(--font-mono);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* global color cycling handled by JS → --green var */
+
+/* ═══ CANVAS BG ═══ */
+#bgCanvas{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.4}
+
+/* ═══ SCROLLBAR ═══ */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--green-dark);border-radius:3px}
+
+/* ═══ LAYOUT ═══ */
+.app{display:grid;grid-template-columns:240px 1fr;grid-template-rows:auto 1fr;min-height:100vh;position:relative;z-index:1}
+.header{grid-column:1/-1;padding:14px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:16px;background:rgba(13,17,23,.92);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);position:sticky;top:0;z-index:100}
+.sidebar{border-right:1px solid var(--border);background:rgba(13,17,23,.85);
+  backdrop-filter:blur(8px);padding:12px;overflow-y:auto;
+  position:sticky;top:56px;height:calc(100vh - 56px)}
+.main{padding:32px 40px;max-width:1200px;min-height:calc(100vh - 56px);margin:0 auto}
+
+/* ═══ HEADER ═══ */
+.logo{font-family:var(--font-display);font-weight:900;font-size:1.3rem;color:var(--green);letter-spacing:3px;
+  text-shadow:0 0 12px var(--green),0 0 30px var(--green-glow)}
+.logo-sub{color:var(--text-dim);font-weight:400;font-size:.65rem;letter-spacing:1px;margin-left:6px;opacity:.7}
+.hdr-stats{margin-left:auto;display:flex;gap:16px;align-items:center}
+.hdr-stat{display:flex;align-items:center;gap:5px;font-size:.7rem;color:var(--text-dim)}
+.hdr-val{color:var(--green);font-weight:600;font-size:.8rem;text-shadow:0 0 8px var(--green-glow)}
+.xp-track{width:100px;height:5px;background:var(--bg);border-radius:3px;overflow:hidden;border:1px solid var(--border)}
+.xp-fill{height:100%;background:linear-gradient(90deg,var(--green-dark),var(--green));
+  transition:width .5s ease;box-shadow:0 0 8px var(--green),0 0 20px var(--green-glow)}
+.streak-pill{background:rgba(255,171,0,.1);border:1px solid var(--amber);color:var(--amber);
+  padding:2px 8px;border-radius:10px;font-size:.6rem;font-weight:600;letter-spacing:.5px;
+  box-shadow:0 0 10px rgba(255,171,0,.2),0 0 24px rgba(255,171,0,.08);text-shadow:0 0 6px rgba(255,171,0,.3)}
+.hint-count{background:rgba(0,229,255,.1);border:1px solid var(--cyan);color:var(--cyan);
+  padding:2px 8px;border-radius:10px;font-size:.6rem;font-weight:600;
+  box-shadow:0 0 10px rgba(0,229,255,.15);text-shadow:0 0 6px rgba(0,229,255,.3)}
+
+/* ═══ SIDEBAR ═══ */
+.sb-title{font-family:var(--font-display);font-size:.55rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:3px;color:var(--text-dim);margin:12px 0 8px 6px}
+.sb-item{display:flex;align-items:center;gap:7px;padding:7px 10px;border-radius:6px;cursor:pointer;
+  font-size:.72rem;color:var(--text-dim);transition:all .15s;border:1px solid transparent;margin-bottom:1px}
+.sb-item:hover{background:var(--green-glow);color:var(--text)}
+.sb-item.active{background:rgba(0,255,136,.08);color:var(--green);border-color:rgba(0,255,136,.15);
+  box-shadow:inset 3px 0 0 var(--green),0 0 12px var(--green-glow);
+  text-shadow:0 0 6px var(--green-glow)}
+.sb-icon{width:14px;text-align:center;font-size:.6rem;opacity:.6}
+.sb-pct{margin-left:auto;font-size:.55rem;font-weight:700;padding:1px 6px;border-radius:8px}
+.sb-pct.hi{color:var(--green);background:rgba(0,255,136,.08)}
+.sb-pct.mid{color:var(--amber);background:rgba(255,171,0,.08)}
+.sb-pct.lo{color:var(--red);background:rgba(255,61,113,.08)}
+.sb-pct.none{color:var(--text-dim)}
+
+.sb-sep{border-top:1px solid var(--border);margin:10px 0}
+.sb-mode{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px;cursor:pointer;
+  font-size:.72rem;color:var(--text);transition:all .2s;border:1px solid var(--border);margin-bottom:4px;background:var(--bg3)}
+.sb-mode:hover{border-color:var(--green);background:var(--green-glow)}
+.sb-mode.active{border-color:var(--green);color:var(--green);background:rgba(0,255,136,.06);
+  box-shadow:0 0 12px var(--green-glow);text-shadow:0 0 6px var(--green-glow)}
+.sb-mode-icon{font-size:.85rem;width:20px;text-align:center}
+
+/* ═══ VIEWS ═══ */
+.view{display:none;animation:fadeSlide .25s ease}
+.view.active{display:block}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.sec-title{font-family:var(--font-display);font-size:1.5rem;font-weight:800;color:var(--text-bright);letter-spacing:-.5px}
+.sec-sub{font-size:.75rem;color:var(--text-dim);margin:2px 0 20px}
+
+/* ═══ HOME ═══ */
+.home-hero{text-align:center;padding:48px 16px 32px}
+.hero-logo{font-family:var(--font-display);font-size:2.8rem;font-weight:900;color:var(--green);letter-spacing:5px;
+  position:relative;text-shadow:0 0 20px var(--green),0 0 50px var(--green-glow),0 0 80px var(--green-glow)}
+.hero-logo::after{content:'JAVA NETWORK PROGRAMMING';display:block;font-size:.55rem;font-weight:400;
+  letter-spacing:6px;color:var(--text-dim);margin-top:4px}
+.hero-desc{color:var(--text-dim);font-size:.78rem;margin-top:12px;max-width:440px;margin-inline:auto;line-height:1.6}
+.home-grid{display:grid;grid-template-columns:1fr;gap:16px;margin-top:44px}
+.hcard{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:36px 40px;
+  cursor:pointer;transition:all .25s;position:relative;overflow:hidden;
+  display:flex;align-items:center;gap:28px;text-align:left}
+.hcard::after{content:'';position:absolute;top:0;left:0;bottom:0;width:3px;
+  background:var(--green);opacity:0;transition:opacity .3s;border-radius:3px;
+  box-shadow:0 0 10px var(--green),0 0 20px var(--green-glow)}
+.hcard:hover{border-color:var(--green);transform:translateX(4px);box-shadow:0 8px 32px rgba(0,0,0,.3),0 0 20px var(--green-glow),0 0 40px var(--green-glow)}
+.hcard:hover::after{opacity:1;animation:breathe 2s ease-in-out infinite}
+.hcard-icon{font-size:2.2rem;flex-shrink:0;width:50px;text-align:center}
+.hcard h4{font-family:var(--font-display);font-weight:700;color:var(--text-bright);font-size:1.05rem;margin-bottom:4px}
+.hcard p{font-size:.75rem;color:var(--text-dim);line-height:1.6}
+
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:44px}
+.stat-box{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:32px 20px;text-align:center}
+.stat-box .v{font-family:var(--font-display);font-size:1.8rem;font-weight:800;color:var(--green);
+  text-shadow:0 0 10px var(--green-glow),0 0 25px var(--green-glow)}
+.stat-box .l{font-size:.6rem;color:var(--text-dim);margin-top:6px;text-transform:uppercase;letter-spacing:2px}
+
+/* breathe handled globally via --breathe JS var */
+
+.recent-wrongs{margin-top:24px;text-align:left}
+.recent-wrongs h4{font-family:var(--font-display);font-size:.75rem;font-weight:700;color:var(--text-dim);
+  text-transform:uppercase;letter-spacing:2px;margin-bottom:10px}
+.rw-item{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px 14px;
+  margin-bottom:6px;font-size:.72rem;color:var(--text);line-height:1.5;cursor:pointer;transition:all .15s}
+.rw-item:hover{border-color:var(--cyan)}
+.rw-item code{color:var(--green);background:var(--bg);padding:1px 4px;border-radius:3px;font-size:.68rem}
+
+/* ═══ Q CARD ═══ */
+.qcard{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:20px 22px;margin-bottom:14px}
+.qcard-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:8px;flex-wrap:wrap}
+.badge{font-size:.55rem;padding:3px 10px;border-radius:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px}
+.badge-java{background:rgba(255,171,0,.1);color:var(--amber);border:1px solid rgba(255,171,0,.15)}
+.badge-networking{background:rgba(0,229,255,.1);color:var(--cyan);border:1px solid rgba(0,229,255,.15)}
+.badge-arch{background:rgba(0,229,255,.1);color:var(--cyan);border:1px solid rgba(0,229,255,.15)}
+.badge-socket-string,.badge-socket-byte{background:rgba(0,255,136,.1);color:var(--green);border:1px solid rgba(0,255,136,.15)}
+.badge-threading{background:rgba(179,136,255,.1);color:var(--purple);border:1px solid rgba(179,136,255,.15)}
+.badge-http{background:rgba(179,136,255,.1);color:var(--purple);border:1px solid rgba(179,136,255,.15)}
+.badge-rest{background:rgba(255,61,113,.1);color:var(--red);border:1px solid rgba(255,61,113,.15)}
+.badge-exam{background:rgba(0,255,136,.1);color:var(--green);border:1px solid rgba(0,255,136,.15)}
+.badge-bug{background:rgba(255,61,113,.1);color:var(--red);border:1px solid rgba(255,61,113,.15)}
+.badge-gen{background:rgba(179,136,255,.08);color:var(--purple);border:1px solid rgba(179,136,255,.12);font-style:italic}
+.qnum{font-size:.6rem;color:var(--text-dim)}
+.qtxt{font-size:.85rem;color:var(--text-bright);line-height:1.7;margin-bottom:16px}
+.qtxt code{background:var(--bg);padding:2px 5px;border-radius:3px;color:var(--green);font-size:.78rem;border:1px solid var(--border)}
+
+/* ═══ CODE BLOCK ═══ */
+.codeblk{background:#0b0f16;border:1px solid var(--border);border-radius:8px;padding:14px 18px;
+  font-size:.75rem;line-height:1.85;overflow-x:auto;margin:10px 0;font-family:var(--font-mono);position:relative}
+.codeblk::before{content:attr(data-lang);position:absolute;top:5px;right:10px;font-size:.5rem;
+  color:var(--text-dim);text-transform:uppercase;letter-spacing:2px}
+.kw{color:#ff7b72}.ty{color:#79c0ff}.st{color:#a5d6ff}.cm{color:#545d68;font-style:italic}
+.fn{color:#d2a8ff}.nm{color:#79c0ff}.an{color:#ffa657}.op{color:#c9d1d9}
+
+.code-blank{display:inline-block;min-width:220px;border-bottom:2px dashed rgba(0,255,136,.4);
+  padding:2px 4px;background:rgba(0,255,136,.04);border-radius:3px 3px 0 0}
+.code-input{background:transparent;border:none;color:var(--green);font-family:var(--font-mono);
+  font-size:.75rem;width:100%;outline:none;caret-color:var(--green)}
+.code-input::placeholder{color:rgba(0,255,136,.2)}
+
+/* ═══ CHOICES ═══ */
+.choices{display:flex;flex-direction:column;gap:6px}
+.ch{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-radius:7px;
+  border:1px solid var(--border);cursor:pointer;transition:all .12s;background:var(--bg3)}
+.ch:hover{border-color:rgba(0,255,136,.3);background:rgba(0,255,136,.04)}
+.ch.sel{border-color:var(--green);background:rgba(0,255,136,.06)}
+.ch.correct{border-color:var(--green);background:rgba(0,255,136,.08);box-shadow:0 0 16px var(--green-glow),0 0 32px var(--green-glow)}
+.ch.wrong{border-color:var(--red);background:rgba(255,61,113,.06)}
+.ch-ltr{width:20px;height:20px;border-radius:50%;border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:600;
+  color:var(--text-dim);flex-shrink:0;margin-top:1px;transition:all .15s}
+.ch.sel .ch-ltr{border-color:var(--green);color:var(--green)}
+.ch.correct .ch-ltr{border-color:var(--green);background:var(--green);color:var(--bg)}
+.ch.wrong .ch-ltr{border-color:var(--red);background:var(--red);color:#fff}
+.ch-txt{font-size:.75rem;color:var(--text);line-height:1.5}
+
+/* ═══ MATCH ═══ */
+.match-grid{display:grid;grid-template-columns:1fr 30px 1fr;gap:6px;align-items:start}
+.match-col{display:flex;flex-direction:column;gap:6px}
+.mi{padding:9px 12px;border-radius:7px;border:1px solid var(--border);font-size:.7rem;cursor:pointer;
+  transition:all .15s;background:var(--bg3);line-height:1.5;user-select:none}
+.mi:hover{border-color:var(--cyan)}
+.mi.sel{border-color:var(--cyan);background:rgba(0,229,255,.06);color:var(--cyan)}
+.mi.ok{border-color:var(--green);background:rgba(0,255,136,.06);color:var(--green);opacity:.6;pointer-events:none}
+.mi.bad{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+.match-mid{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;
+  color:var(--text-dim);font-size:.7rem;padding-top:8px}
+
+/* ═══ SPEED ═══ */
+.speed-bar{height:4px;background:var(--bg);border-radius:2px;overflow:hidden;margin-bottom:18px}
+.speed-fill{height:100%;background:linear-gradient(90deg,var(--red),var(--amber),var(--green));transition:width .08s linear}
+.speed-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+.sbtn{padding:14px;border-radius:8px;border:2px solid var(--border);font-family:var(--font-display);
+  font-weight:700;font-size:.95rem;cursor:pointer;transition:all .12s;text-transform:uppercase;
+  letter-spacing:2px;background:var(--bg3);color:var(--text)}
+.sbtn.t:hover{border-color:var(--green);color:var(--green)}
+.sbtn.f:hover{border-color:var(--red);color:var(--red)}
+.sbtn.fc{border-color:var(--green)!important;background:rgba(0,255,136,.15)!important;color:var(--green)!important}
+.sbtn.fw{border-color:var(--red)!important;background:rgba(255,61,113,.15)!important;color:var(--red)!important}
+
+/* ═══ HINT ═══ */
+.hint-box{background:rgba(0,229,255,.04);border:1px solid rgba(0,229,255,.15);border-left:3px solid var(--cyan);
+  border-radius:0 8px 8px 0;padding:12px 16px;margin-top:12px;font-size:.72rem;line-height:1.6;
+  color:var(--cyan-dim);animation:fadeSlide .25s ease}
+.hint-box strong{color:var(--cyan)}
+.hint-btn{background:none;border:1px solid var(--cyan);color:var(--cyan);font-family:var(--font-mono);
+  font-size:.65rem;padding:4px 12px;border-radius:14px;cursor:pointer;transition:all .15s;margin-right:8px}
+.hint-btn:hover{background:rgba(0,229,255,.1)}
+.hint-btn:disabled{opacity:.3;cursor:not-allowed}
+
+/* ═══ EXPLAIN ═══ */
+.explain{background:rgba(0,0,0,.2);border:1px solid var(--border);border-left:3px solid var(--cyan);
+  border-radius:0 10px 10px 0;padding:20px 24px;margin-top:16px;font-size:.78rem;line-height:1.8;
+  color:var(--text);animation:fadeSlide .25s ease}
+.explain strong{color:var(--cyan)}
+.explain code{background:var(--bg3);padding:2px 6px;border-radius:3px;color:var(--green);font-size:.72rem}
+
+/* ═══ BTNS ═══ */
+.btn{font-family:var(--font-mono);padding:8px 18px;border-radius:7px;border:1px solid var(--border);
+  cursor:pointer;font-size:.72rem;transition:all .15s;background:var(--bg3);color:var(--text)}
+.btn:hover{border-color:var(--green);color:var(--green)}
+.btn-go{background:var(--green-dark);border-color:var(--green);color:var(--green)}
+.btn-go:hover{background:rgba(0,255,136,.15);box-shadow:0 0 16px var(--green-glow),0 0 32px var(--green-glow)}
+.btn:disabled{opacity:.3;cursor:not-allowed;pointer-events:none}
+.btn-row{display:flex;gap:8px;margin-top:16px;align-items:center;flex-wrap:wrap}
+.spacer{flex:1}
+
+/* ═══ RESULT ═══ */
+.result{padding:10px 16px;border-radius:7px;font-size:.75rem;font-weight:500;margin-top:14px;
+  display:flex;align-items:center;gap:8px;animation:fadeSlide .25s ease}
+.result.ok{background:rgba(0,255,136,.06);border:1px solid rgba(0,255,136,.15);color:var(--green);
+  box-shadow:0 0 16px var(--green-glow),0 0 32px var(--green-glow)}
+.result.no{background:rgba(255,61,113,.06);border:1px solid rgba(255,61,113,.15);color:var(--red);
+  box-shadow:0 0 16px rgba(255,61,113,.12),0 0 32px rgba(255,61,113,.06)}
+.result .pts{margin-left:auto;font-weight:700;font-size:.68rem}
+
+/* ═══ SPEED RESULTS ═══ */
+.sres{text-align:center;padding:36px 16px}
+.sres .big{font-family:var(--font-display);font-size:3rem;font-weight:900;color:var(--green)}
+.sres .sub{color:var(--text-dim);font-size:.8rem;margin-top:2px}
+.sres .bd{display:flex;justify-content:center;gap:28px;margin-top:20px}
+.sres .bdi{text-align:center}
+.sres .bdv{font-size:1.3rem;font-weight:700}
+.sres .bdl{font-size:.55rem;color:var(--text-dim);margin-top:2px;text-transform:uppercase;letter-spacing:1px}
+
+/* ═══ TOPIC CHIPS ═══ */
+.chips{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:16px}
+.chip{padding:3px 10px;border-radius:14px;font-size:.6rem;cursor:pointer;border:1px solid var(--border);
+  color:var(--text-dim);transition:all .12s;background:var(--bg3)}
+.chip:hover{border-color:var(--green)}
+.chip.on{border-color:var(--green);color:var(--green);background:rgba(0,255,136,.06);
+  box-shadow:0 0 10px var(--green-glow);text-shadow:0 0 6px var(--green-glow)}
+
+/* ═══ TOAST ═══ */
+.toast{position:fixed;bottom:20px;right:20px;padding:10px 18px;border-radius:7px;font-size:.72rem;z-index:1000;
+  animation:toastIn .3s ease;background:var(--bg3);border:1px solid var(--green);color:var(--green);
+  box-shadow:0 6px 20px rgba(0,0,0,.5)}
+@keyframes toastIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+/* ═══ CONFETTI ═══ */
+.confetti{position:fixed;pointer-events:none;z-index:9998}
+.confetti-dot{position:absolute;width:6px;height:6px;border-radius:50%;animation:confettiFall 1.2s ease-out forwards}
+@keyframes confettiFall{from{opacity:1;transform:translateY(0) rotate(0deg)}to{opacity:0;transform:translateY(120px) rotate(360deg)}}
+
+/* ═══ MOBILE ═══ */
+@media(max-width:768px){
+  .app{grid-template-columns:1fr}
+  .sidebar{display:none;position:fixed;left:0;top:56px;width:260px;height:calc(100vh - 56px);z-index:200;
+    box-shadow:4px 0 24px rgba(0,0,0,.5)}
+  .sidebar.open{display:block}
+  .main{padding:14px}
+  .home-grid{grid-template-columns:1fr 1fr}
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .match-grid{grid-template-columns:1fr;gap:3px}
+  .match-mid{display:none}
+  .menu-toggle{display:block!important}
+}
+.menu-toggle{display:none;background:none;border:none;color:var(--green);font-size:1.1rem;cursor:pointer;padding:4px}
+</style>
+</head>
+<body>
+
+<canvas id="bgCanvas"></canvas>
+
+<div class="app">
+  <header class="header">
+    <button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">&#9776;</button>
+    <div class="logo">NETI<span class="logo-sub">// lab trainer</span></div>
+    <div class="hdr-stats">
+      <div class="hint-count" id="hintPill" title="Hints remaining">3 hints</div>
+      <div class="hdr-stat"><span>XP</span><span class="hdr-val" id="xpNum">0</span>
+        <div class="xp-track"><div class="xp-fill" id="xpBar" style="width:0%"></div></div>
+      </div>
+      <div class="hdr-stat"><span>LVL</span><span class="hdr-val" id="lvlNum">1</span></div>
+      <div class="streak-pill" id="streakPill" style="display:none">0x</div>
+    </div>
+  </header>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-title">Topics</div>
+    <div class="sb-item active" data-topic="home" onclick="nav('home')"><span class="sb-icon">~</span>Dashboard</div>
+    <div class="sb-item" data-topic="java" onclick="nav('java')"><span class="sb-icon">$</span>Java Fundamentals<span class="sb-pct none" id="m-java">--</span></div>
+    <div class="sb-item" data-topic="networking" onclick="nav('networking')"><span class="sb-icon">$</span>Networking<span class="sb-pct none" id="m-networking">--</span></div>
+    <div class="sb-item" data-topic="arch" onclick="nav('arch')"><span class="sb-icon">$</span>Architecture<span class="sb-pct none" id="m-arch">--</span></div>
+    <div class="sb-item" data-topic="socket-string" onclick="nav('socket-string')"><span class="sb-icon">$</span>Socket (String)<span class="sb-pct none" id="m-socket-string">--</span></div>
+    <div class="sb-item" data-topic="socket-byte" onclick="nav('socket-byte')"><span class="sb-icon">$</span>Socket (Byte)<span class="sb-pct none" id="m-socket-byte">--</span></div>
+    <div class="sb-item" data-topic="threading" onclick="nav('threading')"><span class="sb-icon">$</span>Multi-Threading<span class="sb-pct none" id="m-threading">--</span></div>
+    <div class="sb-item" data-topic="http" onclick="nav('http')"><span class="sb-icon">$</span>HTTP Servers<span class="sb-pct none" id="m-http">--</span></div>
+    <div class="sb-item" data-topic="rest" onclick="nav('rest')"><span class="sb-icon">$</span>REST & Web Services<span class="sb-pct none" id="m-rest">--</span></div>
+    <div class="sb-item" data-topic="exam" onclick="nav('exam')"><span class="sb-icon">$</span>Exam TODOs<span class="sb-pct none" id="m-exam">--</span></div>
+    <div class="sb-sep"></div>
+    <div class="sb-title">Game Modes</div>
+    <div class="sb-mode active" data-mode="quiz" onclick="setMode('quiz')"><span class="sb-mode-icon">?</span>Concept Quiz</div>
+    <div class="sb-mode" data-mode="code" onclick="setMode('code')"><span class="sb-mode-icon">&lt;/&gt;</span>Code Completion</div>
+    <div class="sb-mode" data-mode="match" onclick="setMode('match')"><span class="sb-mode-icon">=</span>Pattern Matcher</div>
+    <div class="sb-mode" data-mode="speed" onclick="setMode('speed')"><span class="sb-mode-icon">!</span>Speed Round</div>
+    <div class="sb-mode" data-mode="debug" onclick="setMode('debug')"><span class="sb-mode-icon">x</span>Code Debug</div>
+    <div class="sb-sep"></div>
+    <div class="sb-mode" id="hardBtn" onclick="toggleHard()" style="color:var(--text-dim)"><span class="sb-mode-icon">&#9760;</span>Hard Mode</div>
+    <div class="sb-mode" onclick="resetAll()" style="color:var(--red);border-color:rgba(255,61,113,.15)"><span class="sb-mode-icon">!</span>Reset Progress</div>
+  </aside>
+
+  <main class="main">
+    <div class="view active" id="v-home">
+      <div class="home-hero">
+        <div class="hero-logo">NETI</div>
+        <p class="hero-desc">Master Java Network Programming through interactive challenges. Choose a mode and topic to start drilling. Hints available when you're stuck.</p>
+        <div class="home-grid">
+          <div class="hcard" onclick="setMode('quiz');nav('all')"><div class="hcard-icon">?</div><h4>Concept Quiz</h4><p>MCQs across all topics</p></div>
+          <div class="hcard" onclick="setMode('code');nav('exam')"><div class="hcard-icon">&lt;/&gt;</div><h4>Code Completion</h4><p>Fill in the exam TODOs</p></div>
+          <div class="hcard" onclick="setMode('match');nav('all')"><div class="hcard-icon">=</div><h4>Pattern Matcher</h4><p>Match concepts to defs</p></div>
+          <div class="hcard" onclick="setMode('speed');nav('all')"><div class="hcard-icon">!</div><h4>Speed Round</h4><p>True/False, beat the clock</p></div>
+          <div class="hcard" onclick="setMode('debug');nav('all')"><div class="hcard-icon">x</div><h4>Code Debug</h4><p>Find the bug</p></div>
+        </div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-box"><div class="v" id="sAnswered">0</div><div class="l">Answered</div></div>
+        <div class="stat-box"><div class="v" id="sCorrect">0</div><div class="l">Correct</div></div>
+        <div class="stat-box"><div class="v" id="sAccuracy">0%</div><div class="l">Accuracy</div></div>
+        <div class="stat-box"><div class="v" id="sXP">0</div><div class="l">Total XP</div></div>
+      </div>
+      <div class="recent-wrongs" id="recentWrongs"></div>
+    </div>
+
+    <div class="view" id="v-game">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:2px">
+        <h2 class="sec-title" id="gTitle">Quiz</h2>
+      </div>
+      <p class="sec-sub" id="gSub">Pick the right answer</p>
+      <div class="chips" id="chipBar"></div>
+      <div id="gameArea"></div>
+      <div class="btn-row" id="controls" style="display:none">
+        <button class="hint-btn" id="btnHint" onclick="useHint()">Hint</button>
+        <button class="btn" id="btnCheck" onclick="check()">Check Answer</button>
+        <div class="spacer"></div>
+        <button class="btn btn-go" id="btnNext" onclick="next()" style="display:none">Next &rarr;</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  BG PARTICLES
+// ═══════════════════════════════════════════════════
+(function(){
+  const c=document.getElementById('bgCanvas'),x=c.getContext('2d');
+  let W,H;const dots=[];
+  function resize(){W=c.width=innerWidth;H=c.height=innerHeight}
+  resize();addEventListener('resize',resize);
+  for(let i=0;i<40;i++) dots.push({x:Math.random()*2000,y:Math.random()*1200,r:Math.random()*1.5+.3,
+    dx:(Math.random()-.5)*.15,dy:(Math.random()-.5)*.1,a:Math.random()*.3+.05});
+  function draw(){
+    x.clearRect(0,0,W,H);
+    dots.forEach(d=>{
+      d.x+=d.dx;d.y+=d.dy;
+      if(d.x<0)d.x=W;if(d.x>W)d.x=0;if(d.y<0)d.y=H;if(d.y>H)d.y=0;
+      x.beginPath();x.arc(d.x,d.y,d.r,0,Math.PI*2);
+      x.fillStyle=`rgba(0,255,136,${d.a})`;x.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// color cycling moved to end of script (needs hardMode variable)
+
+// ═══════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════
+let S=load(), mode='quiz', topic='home', curQ=null, done=false, streak=0, hints=3, hardMode=false;
+let matchSt={left:null,pairs:[],matched:0,total:0};
+let speedSt={timer:null,tl:0,sc:0,tot:0,qi:0,qs:[],ok:0,no:0};
+
+function def(){return{xp:0,lv:1,ans:0,cor:0,ts:{},wrongs:[],uniqueSeen:{}}}
+function load(){try{const s=JSON.parse(localStorage.getItem('nc2'));if(s&&s.xp!==undefined){if(!s.uniqueSeen)s.uniqueSeen={};return s}return def()}catch{return def()}}
+function save(){localStorage.setItem('nc2',JSON.stringify(S))}
+function resetAll(){if(confirm('Reset all progress?')){S=def();streak=0;hints=3;hardMode=false;applyTheme();save();ui();nav('home');toast('Reset done')}}
+function toggleHard(){
+  if(S.lv<5){toast('Reach Level 5 to unlock Hard Mode!');return}
+  hardMode=!hardMode;applyTheme();toast(hardMode?'HARD MODE ACTIVATED':'Normal mode');if(topic!=='home')go();
+}
+function applyTheme(){
+  // color cycling JS loop reads hardMode flag directly — no need to set vars here
+  const hb=$('hardBtn');if(hb){hb.textContent=hardMode?'HARD MODE ON':'Hard Mode';
+    hb.style.color=hardMode?'var(--red)':'var(--text-dim)';hb.style.borderColor=hardMode?'var(--red)':'var(--border)'}
+}
+
+// ═══════════════════════════════════════════════════
+//  MASSIVE QUESTION BANKS
+// ═══════════════════════════════════════════════════
+const QZ=[
+  // ─── JAVA ───
+  {t:'java',q:'What keyword distinguishes an instance field from a constructor parameter with the same name?',
+   c:['super','self','this','var'],a:2,h:'It starts with "th" and refers to the current object.',
+   e:'<code>this</code> refers to the current object instance: <code>this.name = name;</code>'},
+  {t:'java',q:'Encapsulation means making fields <code>______</code> and exposing them through getters/setters.',
+   c:['static','public','final','private'],a:3,h:'It hides data from outside the class.',
+   e:'<strong>private</strong> fields prevent direct access, enabling validation in setters.'},
+  {t:'java',q:'The <code>finally</code> block runs:',
+   c:['Only if an exception occurs','Only if no exception','Always, regardless of exceptions','Only when called'],a:2,h:'Think about cleanup — it must ALWAYS happen.',
+   e:'<code>finally</code> always runs — use it for cleanup like closing resources.'},
+  {t:'java',q:'Which logging level indicates a critical failure in <code>java.util.logging</code>?',
+   c:['INFO','WARNING','DEBUG','SEVERE'],a:3,h:'The word means "extremely serious".',
+   e:'<strong>SEVERE</strong> for critical failures. INFO for normal, WARNING for potential issues.'},
+  {t:'java',q:'Which exception is thrown when dividing by zero?',
+   c:['NullPointerException','ArithmeticException','IOException','NumberFormatException'],a:1,h:'Arithmetic operation + error = ?',
+   e:'<code>ArithmeticException</code> is thrown for illegal arithmetic like division by zero.'},
+  {t:'java',q:'In the Message Passing pattern, the Sender creates a <code>Message</code> object and calls:',
+   c:['receiver.getMessage(msg)','receiver.receiveMessage(msg)','sender.send(msg)','msg.deliver()'],a:1,h:'The receiver receives the message.',
+   e:'<code>sender.sendMessage(msg, receiver)</code> internally calls <code>receiver.receiveMessage(msg)</code>.'},
+
+  // ─── NETWORKING ───
+  {t:'networking',q:'The three pillars of any network protocol are:',
+   c:['Speed, Size, Security','Syntax, Semantics, Timing','Request, Response, Retry','Encode, Decode, Transmit'],a:1,h:'Think: structure, meaning, flow control.',
+   e:'<strong>Syntax</strong> (structure), <strong>Semantics</strong> (meaning), <strong>Timing</strong> (synchronization).'},
+  {t:'networking',q:'The OSI model has __ layers, TCP/IP has __ layers.',
+   c:['5, 4','7, 5','7, 4','6, 5'],a:1,h:'OSI is the theoretical one with more layers.',
+   e:'OSI has <strong>7</strong> layers (theoretical). TCP/IP has <strong>5</strong> (practical, powers the real internet).'},
+  {t:'networking',q:'For <code>192.168.10.0/29</code>, how many usable IPs?',
+   c:['8','6','14','30'],a:1,h:'Host bits = 32-29 = 3. Formula: 2^n - 2.',
+   e:'2^3 = 8 total. Minus network ID and broadcast = <strong>6</strong> usable.'},
+  {t:'networking',q:'ARP maps:',
+   c:['MAC → IP','IP → MAC','IP → DNS','DNS → IP'],a:1,h:'Address Resolution Protocol — resolves addresses you know to ones you need.',
+   e:'ARP maps a known <strong>IP</strong> to an unknown <strong>MAC</strong> address on the LAN.'},
+  {t:'networking',q:'PAT allows multiple hosts to share:',
+   c:['A single MAC','A single public IP','A single subnet','A single DNS'],a:1,h:'Most home routers do this — many devices, one external address.',
+   e:'PAT maps many internal hosts to one public IP using different <strong>port numbers</strong>.'},
+  {t:'networking',q:'The 5-tuple that identifies a TCP connection includes:',
+   c:['SrcIP, SrcPort, DstIP, DstPort, Protocol','SrcMAC, DstMAC, VLAN, IP, Port','IP, MAC, DNS, Port, TTL','Host, Port, Method, Path, Body'],a:0,h:'Two endpoints (IP+Port each) plus the protocol type.',
+   e:'Source IP, Source Port, Destination IP, Destination Port, Protocol (TCP/UDP).'},
+  {t:'networking',q:'ARP Poisoning creates what type of attack?',
+   c:['DDoS','Man-in-the-Middle (MITM)','SQL Injection','Buffer Overflow'],a:1,h:'The attacker sits between two communicating parties.',
+   e:'ARP has no authentication — an attacker sends fake ARP replies to intercept traffic (<strong>MITM</strong>).'},
+
+  // ─── ARCHITECTURE ───
+  {t:'arch',q:'In 2-Tier architecture, the main security risk is:',
+   c:['Server overload','SQL injection from client','Too many middleware layers','Network latency'],a:1,h:'No middleware means clients talk directly to the database.',
+   e:'Without middleware, a reverse-engineered client can run <strong>SQL injection</strong> against the DB.'},
+  {t:'arch',q:'The middleware layer does NOT:',
+   c:['Validate input','Enforce business rules','Render the UI','Shield the database'],a:2,h:'The Presentation tier handles what the user sees.',
+   e:'<strong>Presentation tier</strong> renders the UI. Middleware handles validation, logic, and DB translation.'},
+  {t:'arch',q:'Graceful degradation means:',
+   c:['System reboots on failure','Other services keep working when one crashes','All services share a DB','Services communicate via SOAP'],a:1,h:'Think microservices: if Billing dies, Tracking still works.',
+   e:'Each microservice is independent. If Billing crashes, Tracking shows "billing temporarily unavailable".'},
+  {t:'arch',q:'<code>synchronized(lock)</code> creates a:',
+   c:['Daemon thread','Thread pool','Critical section','Deadlock'],a:2,h:'Only one thread enters at a time.',
+   e:'<code>synchronized</code> creates a <strong>critical section</strong> — only one thread can enter a block on the same lock.'},
+  {t:'arch',q:'<code>thread.join()</code> does what?',
+   c:['Kills the thread','Waits for the thread to finish','Runs in parallel','Skips the thread'],a:1,h:'join = wait to join back.',
+   e:'<code>join()</code> blocks the calling thread until the target completes.'},
+
+  // ─── SOCKET STRING ───
+  {t:'socket-string',q:'Which class listens for connections on the server?',
+   c:['Socket','ServerSocket','ClientSocket','NetSocket'],a:1,h:'The server-side socket.',
+   e:'<strong>ServerSocket</strong> listens/accepts. <strong>Socket</strong> is for the actual conversation.'},
+  {t:'socket-string',q:'<code>accept()</code> on ServerSocket is:',
+   c:['Non-blocking','Asynchronous','Blocking','Recursive'],a:2,h:'The program stops and waits.',
+   e:'<code>accept()</code> <strong>blocks</strong> — execution halts until a client connects.'},
+  {t:'socket-string',q:'Correct stream wrapping order for reading text:',
+   c:['BufferedReader → InputStreamReader → InputStream','InputStream → BufferedReader → InputStreamReader','InputStream → InputStreamReader → BufferedReader','PrintWriter → OutputStream → Socket'],a:2,h:'Raw bytes → characters → lines. Innermost to outermost.',
+   e:'<code>InputStream</code> (bytes) → <code>InputStreamReader</code> (chars) → <code>BufferedReader</code> (lines).'},
+  {t:'socket-string',q:'<code>new PrintWriter(stream, true)</code> — what does <code>true</code> do?',
+   c:['Encryption','Auto-flush','Compression','Buffering'],a:1,h:'Without it, data never reaches the client.',
+   e:'<strong>Auto-flush</strong> sends data immediately after <code>println()</code>.'},
+  {t:'socket-string',q:'System ports are in range:',
+   c:['0-65535','1024-49151','0-1023','49152-65535'],a:2,h:'HTTP=80, HTTPS=443, SSH=22 — these are all low numbers.',
+   e:'Ports 0-1023 are <strong>reserved</strong> system ports. Applications use 1024-65535.'},
+
+  // ─── SOCKET BYTE ───
+  {t:'socket-byte',q:'Why use <code>new String(buffer, 0, bytesRead)</code>?',
+   c:['Faster','Prevents garbage characters','Uses less memory','Adds encryption'],a:1,h:'Buffer is 1024 bytes but message might be 5 bytes.',
+   e:'Without specifying range, you get leftover bytes from previous reads as garbage characters.'},
+  {t:'socket-byte',q:'<code>inputStream.read(buffer)</code> returns -1 when:',
+   c:['Buffer full','Message empty','Client disconnected','Timeout'],a:2,h:'End-of-stream = no more data from the other side.',
+   e:'-1 = end-of-stream, meaning the client has <strong>disconnected</strong>.'},
+  {t:'socket-byte',q:'Byte streams can handle:',
+   c:['Text only','Any data (images, binary)','JSON only','XML only'],a:1,h:'Byte = any binary data, not just text.',
+   e:'Unlike BufferedReader/PrintWriter (text only), byte streams handle any data type.'},
+
+  // ─── THREADING ───
+  {t:'threading',q:'In thread-per-connection, the main thread only handles:',
+   c:['Client communication','accept() calls','Database queries','Logging'],a:1,h:'Main thread is the "receptionist" — accepts, delegates, loops.',
+   e:'Main thread calls <code>accept()</code>, creates handler+thread, starts it, loops back.'},
+  {t:'threading',q:'Why is unbounded thread creation dangerous?',
+   c:['Threads are slow','~1MB stack per thread; 10K clients = 10GB RAM','Threads can\'t access sockets','Java limits to 10'],a:1,h:'Think about memory: 1MB * thousands of threads.',
+   e:'Use <code>ExecutorService</code> with a fixed thread pool for bounded concurrency.'},
+  {t:'threading',q:'TCP 3-way handshake order:',
+   c:['ACK, SYN, SYN-ACK','SYN, SYN-ACK, ACK','SYN, ACK, SYN-ACK','SYN-ACK, SYN, ACK'],a:1,h:'Client initiates with SYN, server responds, client confirms.',
+   e:'<strong>SYN → SYN-ACK → ACK</strong>. Both enter ESTABLISHED after step 3.'},
+  {t:'threading',q:'UDP is used for:',
+   c:['Email','Video streaming and gaming','File transfer','Database queries'],a:1,h:'Speed over reliability. Lost frames are acceptable.',
+   e:'<strong>UDP</strong>: fire-and-forget. No handshake, no guaranteed delivery. Ideal for real-time.'},
+  {t:'threading',q:'<code>SO_TIMEOUT</code> does what?',
+   c:['Sets connection timeout','Throws exception after N ms of silence on read()','Limits bandwidth','Enables keepalive'],a:1,h:'So the thread isn\'t stuck forever waiting for data.',
+   e:'<code>setSoTimeout(5000)</code> throws <code>InterruptedIOException</code> after 5 seconds.'},
+  {t:'threading',q:'<code>TCP_NODELAY</code> disables:',
+   c:['Encryption','Nagle\'s algorithm (small packet buffering)','Keepalive','Port reuse'],a:1,h:'Important for gaming, stock trading — no delay on small packets.',
+   e:'Nagle\'s algorithm buffers small packets. Disabling it sends data immediately.'},
+
+  // ─── HTTP ───
+  {t:'http',q:'Factory method to create HttpServer:',
+   c:['new HttpServer(port)','HttpServer.create(new InetSocketAddress(port), 0)','HttpServer.bind(port)','HttpServer.listen(port)'],a:1,h:'It\'s a static factory, not a constructor.',
+   e:'<code>HttpServer.create()</code> is a static factory. Second param <code>0</code> = system default backlog.'},
+  {t:'http',q:'<code>createContext("/greet", new GreetHandler())</code> maps:',
+   c:['A DB table to a class','A URL path to a handler','A thread to a socket','A port to an IP'],a:1,h:'Context = path mapping to handle requests.',
+   e:'Maps URL path <code>/greet</code> to the GreetHandler that processes requests.'},
+  {t:'http',q:'<code>sendResponseHeaders(405, -1)</code> means:',
+   c:['405 OK + chunked','405 Method Not Allowed, no body','405 error + 1 byte','404 Not Found'],a:1,h:'405 = wrong method. -1 = no body to send.',
+   e:'405 = Method Not Allowed. <code>-1</code> = no response body.'},
+  {t:'http',q:'Why <code>AtomicInteger</code> over <code>int++</code>?',
+   c:['Faster','int++ is not thread-safe','Less memory','int++ doesn\'t work in Java'],a:1,h:'Two threads reading the same value → lost increment.',
+   e:'<code>int++</code> = read-increment-write (not atomic). <code>AtomicInteger</code> = single atomic operation.'},
+  {t:'http',q:'Correct handler operation order:',
+   c:['Write → Send headers → Set headers','Set headers → Send headers → Write → Close','Send → Set → Write','Close → Write → Send'],a:1,h:'You must declare headers before committing them.',
+   e:'Set response headers → sendResponseHeaders → write body → close stream.'},
+  {t:'http',q:'HTTP 201 means:',
+   c:['OK','Created','Not Found','Method Not Allowed'],a:1,h:'Used after a successful POST that makes something new.',
+   e:'<strong>201 Created</strong> — used after a POST creates a new resource.'},
+  {t:'http',q:'To read a POST body in an HttpHandler:',
+   c:['exchange.getBody()','exchange.getRequestBody().readAllBytes()','exchange.readPost()','exchange.getInputStream()'],a:1,h:'Request body → read all bytes from it.',
+   e:'<code>exchange.getRequestBody()</code> returns an InputStream, then <code>.readAllBytes()</code> reads it.'},
+
+  // ─── REST ───
+  {t:'rest',q:'REST URL design uses:',
+   c:['Adjectives','Nouns','Numbers','Protocols'],a:1,h:'/shipments not /createNewShipment.',
+   e:'RESTful URLs use <strong>nouns</strong>. HTTP methods (GET/POST/PUT/DELETE) express the action.'},
+  {t:'rest',q:'SOAP payload format:',
+   c:['JSON','XML','YAML','Binary'],a:1,h:'Verbose, with envelope wrapping.',
+   e:'SOAP uses verbose XML. REST uses lightweight JSON.'},
+  {t:'rest',q:'If a resource doesn\'t exist, return:',
+   c:['200 OK','404 Not Found','500 Error','405 Method Not Allowed'],a:1,h:'The resource was "not found".',
+   e:'<code>404 Not Found</code> is the correct response.'},
+  {t:'rest',q:'In the MovieService, <code>GET /movies/1</code> does:',
+   c:['Creates movie 1','Fetches movie with id=1','Deletes movie 1','Updates movie 1'],a:1,h:'GET = read/fetch.',
+   e:'GET is for reading. <code>/movies/1</code> fetches the movie with id 1.'},
+
+  // ─── EXAM ───
+  {t:'exam',q:'Socket Server TODO 3 requires:',
+   c:['A for loop','A recursive call','while (true) {','A switch statement'],a:2,h:'Server must run forever.',
+   e:'<code>while (true)</code> — an infinite loop to continuously accept clients.'},
+  {t:'exam',q:'Socket Server TODO 7 creates:',
+   c:['Thread thread = new Thread(handler);','handler.start();','new Runnable(handler);','Thread.run(handler);'],a:0,h:'Create a Thread with a Runnable.',
+   e:'<code>new Thread(handler)</code> wraps the Runnable handler in a thread.'},
+  {t:'exam',q:'HTTP Server TODO 18 sets:',
+   c:['Request method','Content-Type header to application/json','Port number','Executor'],a:1,h:'Tells the client the response format is JSON.',
+   e:'<code>exchange.getResponseHeaders().set("Content-Type", "application/json")</code>'},
+  {t:'exam',q:'HTTP Server TODO 12 handles non-GET by sending:',
+   c:['200 OK','404 Not Found','405 with -1 (no body)','500 Error'],a:2,h:'Method Not Allowed, no body needed.',
+   e:'<code>sendResponseHeaders(405, -1)</code>.'},
+  {t:'exam',q:'Socket Server TODO 14: the <code>true</code> in PrintWriter enables:',
+   c:['Debug mode','Auto-flush','Logging','Thread safety'],a:1,h:'Data is sent immediately after println().',
+   e:'Auto-flush = immediate sending. Without it, data buffers and the client sees nothing.'},
+  {t:'exam',q:'HTTP Server TODO 8 uses <code>response.getBytes().length</code> instead of <code>response.length()</code> because:',
+   c:['It\'s faster','HTTP Content-Length is in bytes, not characters','It looks cleaner','response.length() doesn\'t exist'],a:1,h:'Non-ASCII characters are multi-byte.',
+   e:'<code>.length()</code> counts characters. <code>.getBytes().length</code> counts bytes — HTTP needs byte count.'},
+];
+
+const CODE=[
+  {t:'exam',cat:'Socket Server',n:1,ctx:'<span class="cm">// TODO 1: Define a port number</span>',
+   ans:'int port = 6666;',acc:['int port = 6666;','int port=6666;','int port = 6666','final int port = 6666;'],
+   h:'Declare an int variable, assign a port above 1023.',e:'Port 6666 is above reserved range (0-1023).'},
+  {t:'exam',cat:'Socket Server',n:2,ctx:'<span class="cm">// TODO 2: Initialize ServerSocket</span>',
+   ans:'ServerSocket serverSocket = new ServerSocket(port);',acc:['ServerSocket serverSocket = new ServerSocket(port);','ServerSocket serverSocket=new ServerSocket(port);'],
+   h:'Create a new ServerSocket passing the port variable.',e:'Binds to the port and starts listening for connections.'},
+  {t:'exam',cat:'Socket Server',n:3,ctx:'<span class="cm">// TODO 3: Infinite loop for accepting clients</span>',
+   ans:'while (true) {',acc:['while (true) {','while(true){','while (true){','while(true) {'],
+   h:'A loop that never ends. Condition is always true.',e:'Server must continuously accept new clients.'},
+  {t:'exam',cat:'Socket Server',n:4,ctx:'<span class="cm">// TODO 4: Accept client connection</span>',
+   ans:'Socket clientSocket = serverSocket.accept();',acc:['Socket clientSocket = serverSocket.accept();','Socket clientSocket=serverSocket.accept();'],
+   h:'Call accept() on the server socket. Returns a Socket.',e:'<code>accept()</code> blocks until a client connects, returns a Socket.'},
+  {t:'exam',cat:'Socket Server',n:6,ctx:'<span class="cm">// TODO 6: Create ClientHandler instance</span>',
+   ans:'ClientHandler handler = new ClientHandler(clientSocket);',acc:['ClientHandler handler = new ClientHandler(clientSocket);','ClientHandler handler=new ClientHandler(clientSocket);'],
+   h:'Pass the client socket to the handler constructor.',e:'Creates a Runnable handler for this specific client.'},
+  {t:'exam',cat:'Socket Server',n:7,ctx:'<span class="cm">// TODO 7: Create Thread with handler</span>',
+   ans:'Thread thread = new Thread(handler);',acc:['Thread thread = new Thread(handler);','Thread thread=new Thread(handler);'],
+   h:'Wrap the Runnable handler in a Thread.',e:'The Thread will execute the handler\'s <code>run()</code> method.'},
+  {t:'exam',cat:'Socket Server',n:8,ctx:'<span class="cm">// TODO 8: Start the thread</span>',
+   ans:'thread.start();',acc:['thread.start();','thread.start()'],
+   h:'NOT .run() — that runs on the current thread!',e:'<code>.start()</code> creates a new OS thread. <code>.run()</code> stays on current thread.'},
+  {t:'exam',cat:'Socket Server',n:12,ctx:'<span class="cm">// TODO 12: Wrap in BufferedReader</span>\n<span class="cm">// inputStreamReader already exists</span>',
+   ans:'in = new BufferedReader(inputStreamReader);',acc:['in = new BufferedReader(inputStreamReader);','in=new BufferedReader(inputStreamReader);'],
+   h:'Assign to the variable "in" declared earlier.',e:'Completes the chain: InputStream → InputStreamReader → BufferedReader.'},
+  {t:'exam',cat:'Socket Server',n:14,ctx:'<span class="cm">// TODO 14: Wrap in PrintWriter with auto-flush</span>\n<span class="cm">// outputStream already exists</span>',
+   ans:'out = new PrintWriter(outputStream, true);',acc:['out = new PrintWriter(outputStream, true);','out=new PrintWriter(outputStream, true);','out = new PrintWriter(outputStream,true);'],
+   h:'The second parameter MUST be true for auto-flush.',e:'<code>true</code> enables auto-flush — critical for sending data immediately.'},
+  {t:'exam',cat:'Socket Server',n:15,ctx:'<span class="ty">String</span> inputLine;\n<span class="cm">// TODO 15: Read loop until disconnect</span>',
+   ans:'while ((inputLine = in.readLine()) != null) {',acc:['while ((inputLine = in.readLine()) != null) {','while((inputLine = in.readLine()) != null){','while ((inputLine=in.readLine())!=null) {'],
+   h:'Read + assign + null-check in one line. Parens around assignment!',e:'Reads a line, assigns to inputLine, checks for null (disconnect).'},
+  {t:'exam',cat:'Socket Server',n:17,ctx:'<span class="cm">// TODO 17: Echo back to client</span>',
+   ans:'out.println("Echo: " + inputLine);',acc:['out.println("Echo: " + inputLine);','out.println("Echo: "+inputLine);'],
+   h:'Use println on the output writer. Prepend "Echo: ".',e:'Sends "Echo: " + original message. Auto-flush ensures immediate delivery.'},
+  {t:'exam',cat:'Socket Server',n:18,ctx:'<span class="cm">// TODO 18: Close client socket (in finally)</span>',
+   ans:'clientSocket.close();',acc:['clientSocket.close();','clientSocket.close()'],
+   h:'Close the CLIENT socket, not the server socket!',e:'Releases resources for this client. Closing serverSocket would stop accepting new clients.'},
+  {t:'exam',cat:'HTTP Server',n:1,ctx:'<span class="cm">// TODO 1: Create HttpServer on port 8000</span>',
+   ans:'HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);',
+   acc:['HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);','HttpServer server=HttpServer.create(new InetSocketAddress(8000),0);'],
+   h:'Factory method, not constructor. InetSocketAddress wraps the port.',e:'<code>HttpServer.create()</code> — static factory. Second param 0 = system default backlog.'},
+  {t:'exam',cat:'HTTP Server',n:2,ctx:'<span class="cm">// TODO 2: Register "/" path</span>',
+   ans:'server.createContext("/", new RootHandler());',acc:['server.createContext("/", new RootHandler());','server.createContext("/",new RootHandler());'],
+   h:'createContext maps a path to a handler class.',e:'Maps root URL <code>/</code> to RootHandler.'},
+  {t:'exam',cat:'HTTP Server',n:4,ctx:'<span class="cm">// TODO 4: Set executor</span>',
+   ans:'server.setExecutor(null);',acc:['server.setExecutor(null);'],
+   h:'null = default single-threaded executor.',e:'<code>null</code> uses the default executor. For multi-threading, use a thread pool.'},
+  {t:'exam',cat:'HTTP Server',n:5,ctx:'<span class="cm">// TODO 5: Start the server</span>',
+   ans:'server.start();',acc:['server.start();','server.start()'],
+   h:'One method call to begin processing requests.',e:'After this call, the server is live on port 8000.'},
+  {t:'exam',cat:'HTTP Server',n:8,ctx:'<span class="ty">String</span> response = <span class="st">"&lt;html&gt;...&lt;/html&gt;"</span>;\n<span class="cm">// TODO 8: Send 200 OK</span>',
+   ans:'exchange.sendResponseHeaders(200, response.getBytes().length);',
+   acc:['exchange.sendResponseHeaders(200, response.getBytes().length);','exchange.sendResponseHeaders(200,response.getBytes().length);'],
+   h:'Use getBytes().length, NOT length(). HTTP needs byte count.',e:'200=OK. Byte length, not char length — they differ for non-ASCII.'},
+  {t:'exam',cat:'HTTP Server',n:18,ctx:'<span class="cm">// TODO 18: Set Content-Type to JSON</span>',
+   ans:'exchange.getResponseHeaders().set("Content-Type", "application/json");',
+   acc:['exchange.getResponseHeaders().set("Content-Type", "application/json");','exchange.getResponseHeaders().set("Content-Type","application/json");'],
+   h:'Chain: getResponseHeaders() then .set(key, value).',e:'Must be done BEFORE sendResponseHeaders().'},
+];
+
+const MATCH=[
+  {t:'networking',title:'Network Concepts',p:[['Protocol Syntax','Arrangement and order of bits'],['Protocol Semantics','What the bits represent'],['Protocol Timing','Speed matching and flow control'],['ARP','Maps IP to MAC address'],['NAT','Shares one public IP among hosts'],['CIDR /24','256 total, 254 usable hosts']]},
+  {t:'socket-string',title:'Stream Wrapping',p:[['InputStream','Raw bytes from socket'],['InputStreamReader','Bytes to characters'],['BufferedReader','Line-by-line via readLine()'],['OutputStream','Raw bytes to socket'],['PrintWriter(s, true)','Text output with auto-flush'],['ServerSocket','Listens for connections']]},
+  {t:'http',title:'HTTP Components',p:[['HttpServer','The server, bound to a port'],['HttpHandler','Interface: handle(HttpExchange)'],['HttpExchange','Request-response object'],['InetSocketAddress','Wraps IP + port'],['AtomicInteger','Thread-safe counter'],['createContext()','Maps path to handler']]},
+  {t:'threading',title:'Concurrency',p:[['synchronized(lock)','Critical section (1 thread)'],['thread.join()','Wait until thread finishes'],['thread.start()','New OS thread'],['thread.run()','Runs on CURRENT thread (wrong!)'],['ExecutorService','Fixed thread pool'],['SO_TIMEOUT','Exception after N ms silence']]},
+  {t:'rest',title:'REST & Web Services',p:[['SOAP','XML, formal WSDL contract'],['REST','JSON, HTTP methods natively'],['GET /shipments/99','Fetch specific shipment'],['POST /shipments','Create new shipment'],['PUT /shipments/99','Update existing shipment'],['404','Resource not found']]},
+  {t:'arch',title:'Architecture Tiers',p:[['1-Tier','All on one machine'],['2-Tier','Client directly to server/DB'],['3-Tier','Middleware between client and DB'],['N-Tier','Independent services, graceful degradation'],['Middleware','Validates input, enforces rules'],['Data Tier','Database, never exposed directly']]},
+  {t:'java',title:'Java Fundamentals',p:[['this','Current object instance'],['private','Access modifier for encapsulation'],['finally','Always runs, for cleanup'],['SEVERE','Critical failure log level'],['try-catch','Exception handling structure'],['toString()','String representation of object']]},
+  {t:'exam',title:'Exam Key Patterns',p:[['TODO 3 (Socket)','while (true) {'],['TODO 14 (Socket)','PrintWriter with true (auto-flush)'],['TODO 15 (Socket)','Read loop: readLine() != null'],['TODO 1 (HTTP)','HttpServer.create(InetSocketAddress, 0)'],['TODO 8 (HTTP)','sendResponseHeaders(200, bytes.length)'],['TODO 12 (HTTP)','405, -1 for non-GET']]},
+];
+
+const SPEED=[
+  {t:'java',q:'`this` refers to the current class, not the object.',a:false,e:'<code>this</code> = current <strong>object instance</strong>.'},
+  {t:'java',q:'`finally` runs only when an exception occurs.',a:false,e:'<code>finally</code> runs regardless of exceptions.'},
+  {t:'java',q:'Logger.severe() is for critical failures.',a:true,e:'SEVERE = critical. INFO = normal. WARNING = potential issues.'},
+  {t:'networking',q:'IPv4 uses 32-bit addresses.',a:true,e:'32 bits in dotted-decimal (e.g., 192.168.1.1).'},
+  {t:'networking',q:'ARP maps MAC addresses to IP addresses.',a:false,e:'ARP maps <strong>IP → MAC</strong>, not the other way around.'},
+  {t:'networking',q:'TCP guarantees delivery and ordering.',a:true,e:'TCP: reliable, ordered. UDP: unreliable, unordered.'},
+  {t:'networking',q:'UDP is connection-oriented.',a:false,e:'UDP is <strong>connectionless</strong> (fire-and-forget).'},
+  {t:'networking',q:'CIDR replaced the classful addressing system.',a:true,e:'CIDR (1993) uses slash notation (/24) instead of rigid classes.'},
+  {t:'socket-string',q:'accept() on ServerSocket is non-blocking.',a:false,e:'<code>accept()</code> is <strong>blocking</strong>.'},
+  {t:'socket-string',q:'PrintWriter(stream, true) enables auto-flush.',a:true,e:'<code>true</code> = auto-flush. Data sent immediately.'},
+  {t:'socket-string',q:'Ports 0-1023 can be freely used by apps.',a:false,e:'Reserved for system services. Use 1024-65535.'},
+  {t:'socket-string',q:'ServerSocket is used for data transfer.',a:false,e:'ServerSocket only listens/accepts. <strong>Socket</strong> transfers data.'},
+  {t:'socket-byte',q:'`new String(buffer)` and `new String(buffer, 0, bytesRead)` are identical.',a:false,e:'<code>new String(buffer)</code> includes garbage from previous reads.'},
+  {t:'socket-byte',q:'read(buffer) returns -1 on disconnect.',a:true,e:'-1 = end-of-stream (client disconnected).'},
+  {t:'threading',q:'Calling .run() instead of .start() creates a new thread.',a:false,e:'<code>.run()</code> runs on the current thread. Only <code>.start()</code> creates a new one.'},
+  {t:'threading',q:'Each Java thread uses ~1MB stack memory.',a:true,e:'10,000 threads = 10GB RAM just for stacks.'},
+  {t:'threading',q:'TCP handshake: SYN, ACK, SYN-ACK.',a:false,e:'Correct: <strong>SYN → SYN-ACK → ACK</strong>.'},
+  {t:'threading',q:'SO_KEEPALIVE detects ghost connections.',a:true,e:'Sends periodic heartbeats to verify the peer is alive.'},
+  {t:'http',q:'sendResponseHeaders(405, -1) = 405 with no body.',a:true,e:'-1 = no response body.'},
+  {t:'http',q:'response.length() and response.getBytes().length always match.',a:false,e:'Characters vs bytes — differ for non-ASCII.'},
+  {t:'http',q:'server.setExecutor(null) uses multi-threading.',a:false,e:'null = default <strong>single-threaded</strong> executor.'},
+  {t:'http',q:'Response headers must be set BEFORE sendResponseHeaders().',a:true,e:'Once sent, headers are locked.'},
+  {t:'http',q:'HttpServer.create() is a constructor call.',a:false,e:'It\'s a <strong>static factory method</strong>, not a constructor.'},
+  {t:'rest',q:'REST uses verbs in URL paths (e.g., /createShipment).',a:false,e:'REST uses <strong>nouns</strong>. HTTP methods express the action.'},
+  {t:'rest',q:'JSON has less overhead than XML.',a:true,e:'No closing tags, no namespaces, no SOAP envelope.'},
+  {t:'rest',q:'SOAP is better suited for mobile apps.',a:false,e:'REST/JSON is preferred for mobile (lighter payload).'},
+  {t:'exam',q:'Socket TODO 14 needs PrintWriter(stream, false).',a:false,e:'Must be <code>true</code> for auto-flush.'},
+  {t:'exam',q:'HTTP TODO 12 sends status 200 for non-GET.',a:false,e:'Sends <strong>405</strong> Method Not Allowed.'},
+  {t:'exam',q:'exchange.getResponseBody() returns an OutputStream.',a:true,e:'Write bytes to it, then close().'},
+  {t:'arch',q:'In 3-tier, the client accesses the database directly.',a:false,e:'Middleware shields the database.'},
+  {t:'arch',q:'Microservices enable graceful degradation.',a:true,e:'If one service dies, others keep working.'},
+];
+
+const DEBUG=[
+  {t:'socket-string',code:'<span class="ty">PrintWriter</span> out = <span class="kw">new</span> <span class="ty">PrintWriter</span>(\n    clientSocket.<span class="fn">getOutputStream</span>()\n);\nout.<span class="fn">println</span>(<span class="st">"Hello"</span>);',
+   q:'Client never receives the message. Why?',c:['Missing semicolon','getOutputStream() is null','Missing true for auto-flush','println() doesn\'t send data'],a:2,h:'What does the second parameter to PrintWriter do?',
+   e:'Without <code>true</code>, PrintWriter buffers data and never flushes.'},
+  {t:'socket-byte',code:'<span class="kw">byte</span>[] buf = <span class="kw">new byte</span>[<span class="nm">1024</span>];\n<span class="kw">int</span> n = is.<span class="fn">read</span>(buf);\n<span class="ty">String</span> msg = <span class="kw">new</span> <span class="ty">String</span>(buf);',
+   q:'Extra garbage characters appear. What\'s wrong?',c:['Buffer too small','Use new String(buf, 0, n)','is.read() wrong','println adds chars'],a:1,h:'You\'re converting all 1024 bytes, but only N were filled.',
+   e:'Use <code>new String(buf, 0, n)</code> to limit to actually-received bytes.'},
+  {t:'threading',code:'<span class="ty">ClientHandler</span> h = <span class="kw">new</span> <span class="ty">ClientHandler</span>(sock);\n<span class="ty">Thread</span> t = <span class="kw">new</span> <span class="ty">Thread</span>(h);\nt.<span class="fn">run</span>();',
+   q:'Server handles only one client at a time. Why?',c:['Not Runnable','Thread constructor wrong','Use .start() not .run()','Missing synchronized'],a:2,h:'.run() doesn\'t create a new thread.',
+   e:'<code>.run()</code> runs on the current thread. <code>.start()</code> creates a new OS thread.'},
+  {t:'http',code:'<span class="ty">String</span> r = <span class="st">"Hello"</span>;\nexchange.<span class="fn">sendResponseHeaders</span>(<span class="nm">200</span>, r.<span class="fn">length</span>());\n<span class="ty">OutputStream</span> os = exchange.<span class="fn">getResponseBody</span>();\nos.<span class="fn">write</span>(r.<span class="fn">getBytes</span>());\nos.<span class="fn">close</span>();',
+   q:'Breaks with non-ASCII characters. Why?',c:['200 is wrong','getResponseBody() wrong','Use getBytes().length not length()','close() not needed'],a:2,h:'HTTP Content-Length is in bytes, not characters.',
+   e:'<code>.length()</code> = chars. <code>.getBytes().length</code> = bytes. Non-ASCII chars are multi-byte.'},
+  {t:'http',code:'exchange.<span class="fn">getResponseHeaders</span>().<span class="fn">set</span>(<span class="st">"Content-Type"</span>, <span class="st">"application/json"</span>);\nexchange.<span class="fn">sendResponseHeaders</span>(<span class="nm">200</span>, json.<span class="fn">getBytes</span>().length);\n<span class="ty">OutputStream</span> os = exchange.<span class="fn">getResponseBody</span>();\nos.<span class="fn">write</span>(json.<span class="fn">getBytes</span>());',
+   q:'Client hangs or gets incomplete response. What\'s missing?',c:['Missing import','Should be 201','OutputStream never closed','getResponseHeaders wrong'],a:2,h:'Every opened stream must be...',
+   e:'<code>os.close()</code> is missing — the response is never finalized.'},
+  {t:'threading',code:'<span class="kw">private static int</span> count = <span class="nm">0</span>;\n\n<span class="kw">public void</span> <span class="fn">handle</span>(<span class="ty">HttpExchange</span> ex) {\n    count++;\n    <span class="ty">String</span> r = <span class="st">"Requests: "</span> + count;\n}',
+   q:'Counter shows wrong values under load. Why?',c:['Should be String','Missing return','int++ not thread-safe; use AtomicInteger','handle() should be static'],a:2,h:'Two threads can read the same value simultaneously.',
+   e:'<code>int++</code> is not atomic. Use <code>AtomicInteger.incrementAndGet()</code>.'},
+  {t:'socket-string',code:'<span class="ty">ServerSocket</span> ss = <span class="kw">new</span> <span class="ty">ServerSocket</span>(<span class="nm">5000</span>);\n<span class="ty">Socket</span> c = ss.<span class="fn">accept</span>();\n<span class="cm">// handle client...</span>\nss.<span class="fn">close</span>();',
+   q:'After first client, no new ones can connect. Why?',c:['Port 5000 reserved','Close client, not serverSocket','accept() called once','Missing IOException'],a:1,h:'What happens when you close the server socket?',
+   e:'Closing <code>serverSocket</code> stops accepting. Close <code>clientSocket</code> instead.'},
+  {t:'http',code:'<span class="ty">String</span> q = exchange.<span class="fn">getRequestURI</span>().<span class="fn">getQuery</span>();\n<span class="ty">String</span>[] pairs = q.<span class="fn">split</span>(<span class="st">"&"</span>);',
+   q:'NullPointerException when visiting /greet without params. Why?',c:['split("&") wrong','getRequestURI() null','Check if query != null first','Loop incorrect'],a:2,h:'What does getQuery() return when there are no params?',
+   e:'<code>getQuery()</code> returns <code>null</code> with no params. Check <code>query != null</code> first.'},
+];
+
+// ═══════════════════════════════════════════════════
+//  PROCEDURAL QUESTION GENERATOR
+// ═══════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
+//  MASSIVE PROCEDURAL GENERATOR
+// ═══════════════════════════════════════════════════
+const _r=(a)=>a[Math.floor(Math.random()*a.length)];
+const _s=(a)=>[...a].sort(()=>Math.random()-.5);
+function _mc(correct,wrongs){const c=[correct,..._s(wrongs).slice(0,3)];const sh=_s(c);return{c:sh,a:sh.indexOf(correct)}}
+
+function genQuestions(){
+  const gen=[];
+
+  // ── CIDR with random IPs (7 prefix variants × random octets = huge variety) ──
+  [{p:24,u:254},{p:25,u:126},{p:26,u:62},{p:27,u:30},{p:28,u:14},{p:29,u:6},{p:30,u:2}].forEach(c=>{
+    const o1=_r([10,172,192]),o2=Math.floor(Math.random()*255),o3=Math.floor(Math.random()*255);
+    const net=`${o1}.${o2}.${o3}.0`;
+    const hb=32-c.p,total=Math.pow(2,hb);
+    const w=[c.u+2,c.u*2,total,c.u-2,c.u+4,total-1].filter(x=>x>0&&x!==c.u);
+    const m=_mc(String(c.u),w.map(String));
+    gen.push({t:'networking',q:`Network <code>${net}/${c.p}</code> — how many <strong>usable</strong> host addresses?`,
+      c:m.c,a:m.a,h:`Host bits = 32 - ${c.p} = ${hb}. Total = 2^${hb} = ${total}. Subtract 2.`,
+      e:`2^${hb} = ${total}. Minus network ID + broadcast = <strong>${c.u}</strong> usable.`,gen:true});
+    // bonus: ask for total addresses
+    const m2=_mc(String(total),[c.u,total+2,total*2,total-2].filter(x=>x>0&&x!==total).map(String));
+    gen.push({t:'networking',q:`Network <code>${o1}.${o2+1}.${o3}.0/${c.p}</code> — how many <strong>total</strong> addresses (including network & broadcast)?`,
+      c:m2.c,a:m2.a,h:`Total = 2^(host bits). Host bits = 32 - ${c.p}.`,
+      e:`Host bits = ${hb}. Total = 2^${hb} = <strong>${total}</strong> (includes network + broadcast).`,gen:true});
+    // bonus: ask for host bits
+    const m3=_mc(String(hb),[hb+1,hb-1,hb+2,c.p].filter(x=>x!==hb&&x>0).map(String));
+    gen.push({t:'networking',q:`For a <code>/${c.p}</code> subnet, how many host bits are there?`,
+      c:m3.c,a:m3.a,h:`Host bits = 32 minus the prefix length.`,
+      e:`32 - ${c.p} = <strong>${hb}</strong> host bits.`,gen:true});
+  });
+
+  // ── Status codes (what does X mean / which code for Y) ──
+  const codes=[{c:200,m:'OK',w:'Successful request'},{c:201,m:'Created',w:'After POST creates a resource'},
+    {c:400,m:'Bad Request',w:'Malformed client data'},{c:404,m:'Not Found',w:'Resource doesn\'t exist'},
+    {c:405,m:'Method Not Allowed',w:'Wrong HTTP method'},{c:500,m:'Internal Server Error',w:'Server crashed'}];
+  codes.forEach(sc=>{
+    // "What does code X mean?"
+    const others=codes.filter(x=>x.c!==sc.c);
+    const m1=_mc(sc.m,_s(others).slice(0,3).map(x=>x.m));
+    gen.push({t:'http',q:`HTTP <code>${sc.c}</code> means:`,c:m1.c,a:m1.a,
+      h:`Think about when a server returns ${sc.c}.`,e:`<strong>${sc.c}</strong> = ${sc.m}: ${sc.w}.`,gen:true});
+    // "Which code for scenario Y?"
+    const m2=_mc(String(sc.c),_s(others).slice(0,3).map(x=>String(x.c)));
+    gen.push({t:'http',q:`Which HTTP status code is correct: "${sc.w}"?`,c:m2.c,a:m2.a,
+      h:`Match the scenario to the right number.`,e:`"${sc.w}" → <strong>${sc.c} ${sc.m}</strong>.`,gen:true});
+  });
+
+  // ── Ports ──
+  [{p:80,s:'HTTP'},{p:443,s:'HTTPS'},{p:22,s:'SSH'},{p:25,s:'SMTP'},{p:21,s:'FTP'},{p:53,s:'DNS'}].forEach(pt=>{
+    const all=[{p:80,s:'HTTP'},{p:443,s:'HTTPS'},{p:22,s:'SSH'},{p:25,s:'SMTP'},{p:21,s:'FTP'},{p:53,s:'DNS'}];
+    // "What service on port X?"
+    const o=all.filter(x=>x.p!==pt.p);const m1=_mc(pt.s,_s(o).slice(0,3).map(x=>x.s));
+    gen.push({t:'networking',q:`Port <code>${pt.p}</code> is the default for:`,c:m1.c,a:m1.a,
+      h:`Well-known port in the 0-1023 range.`,e:`Port <strong>${pt.p}</strong> = <strong>${pt.s}</strong>.`,gen:true});
+    // "Which port for service Y?"
+    const m2=_mc(String(pt.p),_s(o).slice(0,3).map(x=>String(x.p)));
+    gen.push({t:'networking',q:`Which port number is used by <strong>${pt.s}</strong>?`,c:m2.c,a:m2.a,
+      h:`This is a reserved system port (0-1023).`,e:`<strong>${pt.s}</strong> uses port <strong>${pt.p}</strong>.`,gen:true});
+  });
+
+  // ── TODO identification (Socket Server) ──
+  const sTodos=[{n:1,d:'Define port number',code:'int port = 6666;'},{n:2,d:'Create ServerSocket',code:'new ServerSocket(port)'},
+    {n:3,d:'Infinite loop',code:'while (true) {'},{n:4,d:'Accept client',code:'serverSocket.accept()'},
+    {n:5,d:'Print connection message',code:'System.out.println(...)'},{n:6,d:'Create ClientHandler',code:'new ClientHandler(clientSocket)'},
+    {n:7,d:'Create Thread',code:'new Thread(handler)'},{n:8,d:'Start thread',code:'thread.start()'},
+    {n:9,d:'Initialize reader/writer to null',code:'in = null; out = null;'},
+    {n:10,d:'Get InputStream',code:'clientSocket.getInputStream()'},{n:11,d:'Wrap in InputStreamReader',code:'new InputStreamReader(...)'},
+    {n:12,d:'Wrap in BufferedReader',code:'new BufferedReader(...)'},{n:13,d:'Get OutputStream',code:'clientSocket.getOutputStream()'},
+    {n:14,d:'Wrap in PrintWriter with auto-flush',code:'new PrintWriter(stream, true)'},
+    {n:15,d:'Read loop until disconnect',code:'(inputLine = in.readLine()) != null'},
+    {n:17,d:'Echo response',code:'out.println("Echo: " + inputLine)'},{n:18,d:'Close client socket',code:'clientSocket.close()'},
+    {n:19,d:'Close BufferedReader',code:'if (in != null) in.close()'},{n:20,d:'Close PrintWriter',code:'if (out != null) out.close()'}];
+  // "What TODO number is X?"
+  _s(sTodos).slice(0,6).forEach(td=>{
+    const wrong=_s(sTodos.filter(x=>x.n!==td.n)).slice(0,3);
+    const m=_mc('TODO '+td.n,wrong.map(x=>'TODO '+x.n));
+    gen.push({t:'exam',q:`Socket Server: which TODO is "<strong>${td.d}</strong>"?`,c:m.c,a:m.a,
+      h:`The code is: <code>${esc(td.code)}</code>`,e:`"${td.d}" = <strong>TODO ${td.n}</strong>: <code>${esc(td.code)}</code>`,gen:true});
+  });
+  // "What does TODO X do?"
+  _s(sTodos).slice(0,6).forEach(td=>{
+    const wrong=_s(sTodos.filter(x=>x.n!==td.n)).slice(0,3);
+    const m=_mc(td.d,wrong.map(x=>x.d));
+    gen.push({t:'exam',q:`Socket Server TODO ${td.n} does:`,c:m.c,a:m.a,
+      h:`Think about step ${td.n} in the server setup sequence.`,e:`TODO ${td.n} = <strong>${td.d}</strong>: <code>${esc(td.code)}</code>`,gen:true});
+  });
+  // "What code goes in TODO X?"
+  _s(sTodos).slice(0,4).forEach(td=>{
+    const wrong=_s(sTodos.filter(x=>x.n!==td.n)).slice(0,3);
+    const m=_mc(td.code,wrong.map(x=>x.code));
+    gen.push({t:'exam',q:`Socket Server TODO ${td.n} ("${td.d}") — which code?`,c:m.c.map(x=>'<code>'+esc(x)+'</code>'),a:m.a,
+      h:`${td.d} — think about which Java API call this uses.`,e:`TODO ${td.n}: <code>${esc(td.code)}</code>`,gen:true});
+  });
+
+  // ── TODO identification (HTTP Server) ──
+  const hTodos=[{n:1,d:'Create HttpServer',code:'HttpServer.create(new InetSocketAddress(8000), 0)'},
+    {n:2,d:'Create context for /',code:'server.createContext("/", new RootHandler())'},
+    {n:3,d:'Create context for /data',code:'server.createContext("/data", new DataHandler())'},
+    {n:4,d:'Set executor to null',code:'server.setExecutor(null)'},{n:5,d:'Start server',code:'server.start()'},
+    {n:6,d:'Get request method',code:'exchange.getRequestMethod()'},{n:7,d:'Check if GET',code:'"GET".equals(method)'},
+    {n:8,d:'Send 200 with byte length',code:'sendResponseHeaders(200, response.getBytes().length)'},
+    {n:9,d:'Get response body stream',code:'exchange.getResponseBody()'},
+    {n:10,d:'Write response bytes',code:'os.write(response.getBytes())'},{n:11,d:'Close output stream',code:'os.close()'},
+    {n:12,d:'Send 405 for non-GET',code:'sendResponseHeaders(405, -1)'},
+    {n:13,d:'Guard clause for non-POST',code:'!"POST".equals(...) → 405, return'},
+    {n:14,d:'Get request headers',code:'exchange.getRequestHeaders()'},
+    {n:15,d:'Get User-Agent header',code:'headers.getFirst("User-Agent")'},
+    {n:16,d:'Get request body stream',code:'exchange.getRequestBody()'},
+    {n:17,d:'Read all body bytes',code:'is.readAllBytes()'},
+    {n:18,d:'Set Content-Type to JSON',code:'getResponseHeaders().set("Content-Type","application/json")'},
+    {n:19,d:'Send 200 for JSON response',code:'sendResponseHeaders(200, jsonResponse.getBytes().length)'},
+    {n:20,d:'Write JSON and close',code:'os.write(...); os.close()'}];
+  _s(hTodos).slice(0,6).forEach(td=>{
+    const wrong=_s(hTodos.filter(x=>x.n!==td.n)).slice(0,3);
+    const m=_mc('TODO '+td.n,wrong.map(x=>'TODO '+x.n));
+    gen.push({t:'exam',q:`HTTP Server: which TODO is "<strong>${td.d}</strong>"?`,c:m.c,a:m.a,
+      h:`Code: <code>${esc(td.code)}</code>`,e:`"${td.d}" = <strong>TODO ${td.n}</strong>`,gen:true});
+  });
+  _s(hTodos).slice(0,6).forEach(td=>{
+    const wrong=_s(hTodos.filter(x=>x.n!==td.n)).slice(0,3);
+    const m=_mc(td.d,wrong.map(x=>x.d));
+    gen.push({t:'exam',q:`HTTP Server TODO ${td.n} does:`,c:m.c,a:m.a,
+      h:`Think about step ${td.n} in the HTTP handler flow.`,e:`TODO ${td.n} = <strong>${td.d}</strong>`,gen:true});
+  });
+
+  // ── TCP vs UDP (all attributes, randomized) ──
+  [{q:'guarantees delivery',a:'TCP'},{q:'is connectionless',a:'UDP'},{q:'requires a 3-way handshake',a:'TCP'},
+   {q:'is used for video streaming',a:'UDP'},{q:'maintains packet ordering',a:'TCP'},{q:'is fire-and-forget',a:'UDP'},
+   {q:'retransmits lost packets',a:'TCP'},{q:'is used for DNS lookups',a:'UDP'},{q:'is used for HTTP',a:'TCP'},
+   {q:'is used for gaming (low latency)',a:'UDP'},{q:'has lower latency',a:'UDP'},{q:'is used for email (SMTP)',a:'TCP'},
+   {q:'is used for VOIP',a:'UDP'},{q:'is used for file transfer (FTP)',a:'TCP'},
+   {q:'allows packets to arrive out of order',a:'UDP'},{q:'provides flow control',a:'TCP'}].forEach(at=>{
+    gen.push({t:'threading',q:`Which protocol ${at.q}?`,c:_r([['TCP','UDP','Both','Neither'],['UDP','TCP','Neither','Both']]),
+      a:at.a==='TCP'?(_r([0,1])===0?0:1):(_r([0,1])===0?0:1),gen:true,
+      h:'TCP = reliable/ordered. UDP = fast/unreliable.',e:`<strong>${at.a}</strong> ${at.q}.`});
+    // fix the answer index properly
+    const ch=['TCP','UDP','Both','Neither'];const sh=_s(ch);
+    gen[gen.length-1].c=sh;gen[gen.length-1].a=sh.indexOf(at.a);
+  });
+
+  // ── "What class/method does X?" ──
+  const apis=[
+    {t:'socket-string',q:'listens for incoming TCP connections',a:'ServerSocket',w:['Socket','ClientSocket','HttpServer']},
+    {t:'socket-string',q:'blocks until a client connects',a:'accept()',w:['connect()','listen()','bind()']},
+    {t:'socket-string',q:'converts raw bytes to characters',a:'InputStreamReader',w:['BufferedReader','PrintWriter','OutputStream']},
+    {t:'socket-string',q:'provides readLine() for line-by-line reading',a:'BufferedReader',w:['InputStreamReader','Scanner','InputStream']},
+    {t:'socket-string',q:'sends text with auto-flush',a:'PrintWriter',w:['BufferedWriter','OutputStream','DataOutputStream']},
+    {t:'http',q:'creates an HTTP server bound to a port',a:'HttpServer.create()',w:['new HttpServer()','HttpServer.bind()','HttpServer.listen()']},
+    {t:'http',q:'maps a URL path to a handler',a:'createContext()',w:['addRoute()','mapPath()','registerHandler()']},
+    {t:'http',q:'gets the HTTP method of a request',a:'getRequestMethod()',w:['getMethod()','requestType()','getHTTPMethod()']},
+    {t:'http',q:'commits response status and headers',a:'sendResponseHeaders()',w:['writeHeaders()','commitResponse()','setStatus()']},
+    {t:'http',q:'returns the response output stream',a:'getResponseBody()',w:['getOutputStream()','responseStream()','getWriter()']},
+    {t:'threading',q:'creates a critical section for thread safety',a:'synchronized',w:['volatile','atomic','concurrent']},
+    {t:'threading',q:'waits for another thread to finish',a:'join()',w:['wait()','sleep()','yield()']},
+    {t:'threading',q:'provides a thread-safe counter',a:'AtomicInteger',w:['int','Integer','SyncCounter']},
+    {t:'threading',q:'manages a fixed pool of reusable threads',a:'ExecutorService',w:['ThreadGroup','ThreadManager','ThreadPool']},
+    {t:'java',q:'refers to the current object instance',a:'this',w:['self','super','class']},
+    {t:'java',q:'runs cleanup code regardless of exceptions',a:'finally',w:['catch','throw','assert']},
+  ];
+  _s(apis).slice(0,10).forEach(api=>{
+    const m=_mc(api.a,api.w);
+    gen.push({t:api.t,q:`Which Java class/keyword ${api.q}?`,c:m.c,a:m.a,
+      h:`Think about the specific API for this task.`,e:`<strong>${api.a}</strong> ${api.q}.`,gen:true});
+  });
+
+  // ── "What happens if..." scenario questions ──
+  const scenarios=[
+    {t:'socket-string',q:'you forget <code>true</code> in <code>new PrintWriter(stream)</code>?',a:'Data is buffered and never sent to the client',
+      w:['A compilation error occurs','The server crashes','Data is sent encrypted'],h:'Auto-flush sends data immediately.'},
+    {t:'socket-byte',q:'you use <code>new String(buffer)</code> instead of <code>new String(buffer, 0, bytesRead)</code>?',
+      a:'Garbage characters from previous reads appear',w:['The program crashes','Data is lost','Nothing different happens'],h:'Buffer is 1024 bytes, message might be 5.'},
+    {t:'threading',q:'you call <code>thread.run()</code> instead of <code>thread.start()</code>?',
+      a:'Code runs on the current thread — no concurrency',w:['A new thread is created','The program crashes','The thread runs twice'],h:'.run() doesn\'t create a new OS thread.'},
+    {t:'http',q:'you use <code>response.length()</code> instead of <code>response.getBytes().length</code> for sendResponseHeaders?',
+      a:'Content-Length mismatch for non-ASCII characters',w:['Compilation error','Server crashes','No difference'],h:'Characters vs bytes differ for multi-byte chars.'},
+    {t:'http',q:'you forget to call <code>os.close()</code> on the response body?',
+      a:'The response may never reach the client',w:['Server crashes','Nothing happens','Data is encrypted'],h:'Closing commits the response.'},
+    {t:'socket-string',q:'you close <code>serverSocket</code> instead of <code>clientSocket</code> after handling a client?',
+      a:'The server stops accepting any new connections',w:['Only that client disconnects','Nothing happens','The server restarts'],h:'ServerSocket is the listener — closing it stops everything.'},
+    {t:'threading',q:'you create 10,000 threads without a thread pool?',
+      a:'~10GB RAM consumed just for stacks, plus heavy context-switching',w:['Java limits to 100 threads','Nothing bad happens','Threads share memory automatically'],h:'Each thread uses ~1MB of stack memory.'},
+    {t:'http',q:'you set response headers AFTER calling <code>sendResponseHeaders()</code>?',
+      a:'The headers are already committed and changes are ignored',w:['An exception is thrown','Headers are applied normally','The server restarts'],h:'Order: set headers → send headers → write body.'},
+    {t:'http',q:'you pass <code>-1</code> as the content length to <code>sendResponseHeaders()</code>?',
+      a:'No response body is sent (appropriate for error codes)',w:['Chunked encoding is used','An exception is thrown','1 byte is sent'],h:'-1 means no body.'},
+    {t:'exam',q:'readLine() returns <code>null</code> in the socket read loop?',
+      a:'The client has disconnected (end of stream)',w:['An empty message was sent','A timeout occurred','The server crashed'],h:'null = end-of-stream.'},
+    {t:'arch',q:'a mobile app connects directly to a database in a 2-tier setup?',
+      a:'Reverse-engineering exposes connection strings; SQL injection risk',w:['Better performance','Enhanced security','Automatic encryption'],h:'No middleware = no protection.'},
+    {t:'rest',q:'the Billing microservice crashes in an N-tier architecture?',
+      a:'Other services keep working; billing shows "temporarily unavailable"',w:['All services crash','The system restarts','Users are logged out'],h:'Graceful degradation.'},
+  ];
+  _s(scenarios).forEach(sc=>{
+    const m=_mc(sc.a,sc.w);
+    gen.push({t:sc.t,q:`What happens if ${sc.q}`,c:m.c,a:m.a,h:sc.h,
+      e:`${sc.a}.`,gen:true});
+  });
+
+  // ── "Fill the blank" style as MCQ ──
+  const blanks=[
+    {t:'socket-string',q:'Complete: <code>BufferedReader in = new BufferedReader(new _______(clientSocket.getInputStream()))</code>',
+      a:'InputStreamReader',w:['BufferedInputStream','DataInputStream','ObjectInputStream'],h:'Converts bytes to characters.'},
+    {t:'socket-string',q:'Complete: <code>PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), _____)</code>',
+      a:'true',w:['false','null','1'],h:'Enables auto-flush.'},
+    {t:'http',q:'Complete: <code>HttpServer server = HttpServer._______(new InetSocketAddress(8000), 0)</code>',
+      a:'create',w:['new','build','make'],h:'Static factory method.'},
+    {t:'http',q:'Complete: <code>exchange.sendResponseHeaders(200, response._______().length)</code>',
+      a:'getBytes',w:['toCharArray','toString','toByteArray'],h:'HTTP Content-Length needs byte count.'},
+    {t:'http',q:'Complete: <code>exchange.getResponseHeaders().set("_______", "application/json")</code>',
+      a:'Content-Type',w:['Accept','Content-Length','Authorization'],h:'Tells the client what format the body is in.'},
+    {t:'threading',q:'Complete: <code>_______ pool = Executors.newFixedThreadPool(100)</code>',
+      a:'ExecutorService',w:['ThreadPool','ThreadGroup','Executor'],h:'Interface for managing thread pools.'},
+    {t:'threading',q:'Complete: <code>socket.setSoTimeout(_____)</code> throws InterruptedIOException after that many ms.',
+      a:'5000',w:['0','-1','true'],h:'Milliseconds of silence before timeout.'},
+    {t:'arch',q:'Complete: <code>_______(lock) { /* critical section */ }</code>',
+      a:'synchronized',w:['volatile','atomic','locked'],h:'Java keyword for mutual exclusion.'},
+    {t:'exam',q:'Socket TODO 15: <code>while ((inputLine = in._______()) != null)</code>',
+      a:'readLine',w:['read','nextLine','getLine'],h:'BufferedReader method that reads a full line of text.'},
+    {t:'exam',q:'HTTP TODO 12: <code>exchange.sendResponseHeaders(_____, -1)</code> for non-GET requests.',
+      a:'405',w:['200','404','500'],h:'Method Not Allowed.'},
+  ];
+  _s(blanks).forEach(b=>{
+    const m=_mc(b.a,b.w);
+    gen.push({t:b.t,q:b.q,c:m.c,a:m.a,h:b.h,e:`The answer is <strong>${b.a}</strong>.`,gen:true});
+  });
+
+  // ── OSI / TCP-IP layer questions ──
+  const layers=[
+    {q:'Which layer handles routing and IP addressing?',a:'Network',w:['Transport','Data Link','Application'],t:'networking',h:'IP operates here.'},
+    {q:'Which layer provides end-to-end communication (TCP/UDP)?',a:'Transport',w:['Network','Session','Application'],t:'networking',h:'TCP and UDP live here.'},
+    {q:'Which layer deals with MAC addresses and switches?',a:'Data Link',w:['Physical','Network','Transport'],t:'networking',h:'Ethernet frames and MAC addresses.'},
+    {q:'HTTP, FTP, and SMTP operate at which layer?',a:'Application',w:['Transport','Presentation','Session'],t:'networking',h:'User-facing protocols.'},
+    {q:'Which model won the "protocol war" and powers the internet?',a:'TCP/IP',w:['OSI','ISO','IEEE'],t:'networking',h:'Practical > theoretical.'},
+  ];
+  _s(layers).forEach(l=>{
+    const m=_mc(l.a,l.w);
+    gen.push({t:l.t,q:l.q,c:m.c,a:m.a,h:l.h,e:`<strong>${l.a}</strong>.`,gen:true});
+  });
+
+  // ── SOAP vs REST ──
+  const soapRest=[
+    {q:'uses XML with SOAP envelope wrapping',a:'SOAP',w:['REST','GraphQL','gRPC']},
+    {q:'uses JSON as its primary payload format',a:'REST',w:['SOAP','XML-RPC','CORBA']},
+    {q:'has built-in ACID transaction support',a:'SOAP',w:['REST','GraphQL','gRPC']},
+    {q:'uses HTTP methods natively (GET/POST/PUT/DELETE)',a:'REST',w:['SOAP','WSDL','XML-RPC']},
+    {q:'requires a formal WSDL contract',a:'SOAP',w:['REST','JSON-RPC','GraphQL']},
+    {q:'is preferred for mobile apps due to lightweight payloads',a:'REST',w:['SOAP','CORBA','XML-RPC']},
+    {q:'is better suited for banking and financial systems',a:'SOAP',w:['REST','GraphQL','gRPC']},
+  ];
+  _s(soapRest).slice(0,4).forEach(sr=>{
+    const m=_mc(sr.a,sr.w);
+    gen.push({t:'rest',q:`Which web service style ${sr.q}?`,c:m.c,a:m.a,
+      h:'SOAP = formal/XML. REST = lightweight/JSON.',e:`<strong>${sr.a}</strong> ${sr.q}.`,gen:true});
+  });
+
+  return gen;
+}
+
+// ═══════════════════════════════════════════════════
+//  ANTI-REPEAT: track seen questions, cycle through all before repeating
+// ═══════════════════════════════════════════════════
+let seenIds=new Set();
+let generatedQs=genQuestions();
+
+function qId(q){return(q.q||'').substring(0,80)+(q.a||'')}
+
+function pickUnique(arr){
+  let pool=filt(arr);
+  if(mode==='quiz'){pool=[...pool,...filt(generatedQs)]}
+  if(!pool.length)pool=arr;
+  // try unseen first
+  let unseen=pool.filter(q=>!seenIds.has(qId(q)));
+  if(!unseen.length){
+    // all seen — regenerate fresh questions and reset seen for this pool
+    generatedQs=genQuestions();
+    if(mode==='quiz')pool=[...filt(arr),...filt(generatedQs)];
+    seenIds.clear();
+    unseen=pool;
+    toast('Full cycle! All questions refreshed.');
+  }
+  const q=unseen[Math.floor(Math.random()*unseen.length)];
+  seenIds.add(qId(q));
+  return q;
+}
+
+// ═══════════════════════════════════════════════════
+//  NAV & MODE
+// ═══════════════════════════════════════════════════
+function nav(t){
+  topic=t;
+  document.querySelectorAll('.sb-item').forEach(n=>n.classList.remove('active'));
+  const el=document.querySelector(`.sb-item[data-topic="${t}"]`);if(el)el.classList.add('active');
+  if(t==='home'){$('v-home').classList.add('active');$('v-game').classList.remove('active')}
+  else{$('v-home').classList.remove('active');$('v-game').classList.add('active');go()}
+  document.getElementById('sidebar').classList.remove('open');
+}
+function setMode(m){
+  mode=m;
+  document.querySelectorAll('.sb-mode').forEach(b=>b.classList.remove('active'));
+  const el=document.querySelector(`.sb-mode[data-mode="${m}"]`);if(el)el.classList.add('active');
+  if(topic!=='home')go();
+}
+function $(id){return document.getElementById(id)}
+
+// ═══════════════════════════════════════════════════
+//  GAME ENGINE
+// ═══════════════════════════════════════════════════
+function go(){
+  done=false;hints=Math.max(hints,0);
+  $('controls').style.display='flex';$('btnNext').style.display='none';
+  $('btnCheck').style.display='';$('btnCheck').disabled=false;
+  $('btnHint').disabled=hardMode||hints<=0;$('hintPill').textContent=hints+' hints';
+
+  const titles={quiz:'Concept Quiz',code:'Code Completion',match:'Pattern Matcher',speed:'Speed Round',debug:'Code Debug'};
+  const subs={quiz:'Pick the right answer',code:'Fill in the missing code',match:'Match concepts to definitions',speed:'True/False — beat the clock',debug:'Find the bug'};
+  $('gTitle').textContent=titles[mode]||'Quiz';
+  $('gSub').textContent=subs[mode]||'';
+  buildChips();
+  if(mode==='quiz')loadQ();else if(mode==='code')loadC();else if(mode==='match')loadM();
+  else if(mode==='speed')startSpeed();else if(mode==='debug')loadD();
+}
+
+function buildChips(){
+  const ts=[{id:'all',l:'All'},{id:'java',l:'Java'},{id:'networking',l:'Network'},{id:'arch',l:'Arch'},
+    {id:'socket-string',l:'Sock-Str'},{id:'socket-byte',l:'Sock-Byte'},{id:'threading',l:'Thread'},
+    {id:'http',l:'HTTP'},{id:'rest',l:'REST'},{id:'exam',l:'Exam'}];
+  $('chipBar').innerHTML=ts.map(t=>`<div class="chip${t.id===topic?' on':''}" onclick="topic='${t.id}';buildChips();go()">${t.l}</div>`).join('');
+}
+
+function filt(arr){return(topic==='all'||topic==='home')?arr:arr.filter(q=>q.t===topic)}
+function pick(arr){return pickUnique(arr)}
+
+// ═══════════════════════════════════════════════════
+//  QUIZ
+// ═══════════════════════════════════════════════════
+function loadQ(){
+  const q=pick(QZ);curQ=q;done=false;
+  $('btnNext').style.display='none';$('btnCheck').style.display='';$('btnCheck').disabled=false;
+  $('btnHint').disabled=hardMode||hints<=0;
+  const hardBadge=hardMode?'<span class="badge badge-bug">HARD</span>':'';
+  const genBadge=q.gen?'<span class="badge badge-gen">generated</span>':'';
+  $('gameArea').innerHTML=`<div class="qcard">
+    <div class="qcard-hdr"><span class="badge badge-${q.t}">${q.t}</span>${genBadge}${hardBadge}</div>
+    <div class="qtxt">${q.q}</div>
+    <div class="choices" id="choices">${q.c.map((c,i)=>`<div class="ch" data-i="${i}" onclick="sel(this)"><div class="ch-ltr">${'ABCD'[i]}</div><div class="ch-txt">${c}</div></div>`).join('')}</div>
+  </div>`;
+}
+function sel(el){if(done)return;document.querySelectorAll('.ch').forEach(c=>c.classList.remove('sel'));el.classList.add('sel')}
+
+function check(){
+  if(done)return;
+  if(mode==='quiz')chkQ();else if(mode==='code')chkC();else if(mode==='debug')chkD();
+}
+
+function chkQ(){
+  const s=document.querySelector('.ch.sel');if(!s)return;done=true;
+  const i=+s.dataset.i,ok=i===curQ.a;
+  document.querySelectorAll('.ch').forEach(c=>{
+    const ci=+c.dataset.i;
+    if(ci===curQ.a)c.classList.add('correct');
+    if(ci===i&&!ok)c.classList.add('wrong');
+  });
+  result(ok,curQ.e,curQ.t);
+}
+
+// ═══════════════════════════════════════════════════
+//  CODE COMPLETION
+// ═══════════════════════════════════════════════════
+function loadC(){
+  const q=pick(CODE);curQ=q;done=false;
+  $('btnNext').style.display='none';$('btnCheck').style.display='';$('btnCheck').disabled=false;$('btnHint').disabled=hardMode||hints<=0;
+  const ml=q.ans.includes('\n');
+  $('gameArea').innerHTML=`<div class="qcard">
+    <div class="qcard-hdr"><span class="badge badge-exam">${q.cat} — TODO ${q.n}</span></div>
+    <div class="qtxt">Fill in <strong>TODO ${q.n}</strong>:</div>
+    <div class="codeblk" data-lang="java">${q.ctx}\n<div class="code-blank">${ml?
+    '<textarea class="code-input" id="ci" rows="3" placeholder="Type your answer..." spellcheck="false"></textarea>':
+    '<input class="code-input" id="ci" placeholder="Type your answer..." spellcheck="false" autocomplete="off">'}</div></div></div>`;
+  $('ci').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!done){e.preventDefault();chkC()}});
+  $('ci').focus();
+}
+function chkC(){
+  const v=$('ci').value.trim();if(!v)return;done=true;
+  const norm=s=>s.replace(/\s+/g,' ').replace(/;\s*$/,';').trim();
+  const ok=curQ.acc.some(a=>norm(v)===norm(a)||norm(v)===norm(a).replace(/;$/,''));
+  $('ci').style.color=ok?'var(--green)':'var(--red)';$('ci').readOnly=true;
+  if(!ok)$('gameArea').innerHTML+=`<div style="margin-top:10px;font-size:.72rem;color:var(--text-dim)">Expected: <code style="color:var(--green)">${esc(curQ.ans)}</code></div>`;
+  result(ok,curQ.e,curQ.t);
+}
+
+// ═══════════════════════════════════════════════════
+//  PATTERN MATCHER
+// ═══════════════════════════════════════════════════
+function loadM(){
+  const pool=(topic==='all'||topic==='home')?MATCH:MATCH.filter(s=>s.t===topic);
+  const set=pool.length?pool[Math.floor(Math.random()*pool.length)]:MATCH[0];
+  curQ=set;done=false;$('controls').style.display='none';
+  const sr=[...set.p].sort(()=>Math.random()-.5);
+  matchSt={left:null,pairs:set.p,matched:0,total:set.p.length};
+  $('gameArea').innerHTML=`<div class="qcard">
+    <div class="qcard-hdr"><span class="badge badge-${set.t}">${set.title}</span><span class="qnum"><span id="mc">0</span>/${set.p.length}</span></div>
+    <div class="qtxt">Click a concept, then its matching definition.</div>
+    <div class="match-grid"><div class="match-col" id="ml">${set.p.map((p,i)=>`<div class="mi" data-s="l" data-i="${i}" onclick="mclk(this)">${p[0]}</div>`).join('')}</div>
+    <div class="match-mid">${set.p.map(()=>'&rarr;').join('')}</div>
+    <div class="match-col" id="mr">${sr.map(p=>`<div class="mi" data-s="r" data-v="${esc(p[1])}" onclick="mclk(this)">${p[1]}</div>`).join('')}</div></div></div>`;
+}
+function mclk(el){
+  if(el.classList.contains('ok'))return;
+  if(el.dataset.s==='l'){
+    document.querySelectorAll('#ml .mi').forEach(i=>i.classList.remove('sel'));
+    el.classList.add('sel');matchSt.left=+el.dataset.i;
+  }else if(el.dataset.s==='r'&&matchSt.left!==null){
+    const exp=matchSt.pairs[matchSt.left][1],got=el.dataset.v;
+    if(got===exp){
+      el.classList.add('ok');
+      document.querySelector(`#ml .mi[data-i="${matchSt.left}"]`).classList.add('ok');
+      document.querySelector(`#ml .mi[data-i="${matchSt.left}"]`).classList.remove('sel');
+      matchSt.matched++;matchSt.left=null;$('mc').textContent=matchSt.matched;
+      addXP(15);
+      if(matchSt.matched===matchSt.total){
+        record(curQ.t,true);
+        setTimeout(()=>{$('gameArea').innerHTML+=`<div class="result ok" style="margin-top:14px">All matched! <span class="pts">+${matchSt.total*15} XP</span></div>
+          <div class="btn-row"><div class="spacer"></div><button class="btn btn-go" onclick="go()">Next Set &rarr;</button></div>`;confetti()},300);
+      }
+    }else{el.classList.add('bad');setTimeout(()=>el.classList.remove('bad'),350)}
+  }
+}
+
+// ═══════════════════════════════════════════════════
+//  SPEED ROUND
+// ═══════════════════════════════════════════════════
+function startSpeed(){
+  let pool=filt(SPEED);if(pool.length<5)pool=SPEED;
+  const qs=[...pool].sort(()=>Math.random()-.5).slice(0,12);
+  speedSt={timer:null,tl:8000,sc:0,tot:qs.length,qi:0,qs,ok:0,no:0};
+  $('controls').style.display='none';showSQ();
+}
+function showSQ(){
+  if(speedSt.qi>=speedSt.qs.length){showSR();return}
+  const q=speedSt.qs[speedSt.qi];speedSt.tl=hardMode?4000:8000;
+  $('gameArea').innerHTML=`<div class="qcard">
+    <div class="qcard-hdr"><span class="badge badge-${q.t}">${q.t}</span><span class="qnum">${speedSt.qi+1}/${speedSt.tot}</span></div>
+    <div class="speed-bar"><div class="speed-fill" id="sf" style="width:100%"></div></div>
+    <div class="qtxt" style="font-size:.95rem;text-align:center;padding:18px 0">${q.q}</div>
+    <div class="speed-btns"><button class="sbtn t" onclick="sAns(true)">TRUE</button><button class="sbtn f" onclick="sAns(false)">FALSE</button></div></div>`;
+  clearInterval(speedSt.timer);const st=Date.now();const dur=hardMode?4000:8000;
+  speedSt.timer=setInterval(()=>{
+    const e=Date.now()-st,p=Math.max(0,(1-e/dur)*100);
+    const b=$('sf');if(b)b.style.width=p+'%';
+    if(e>=dur){clearInterval(speedSt.timer);sAns(null)}
+  },50);
+}
+function sAns(v){
+  clearInterval(speedSt.timer);const q=speedSt.qs[speedSt.qi],ok=v===q.a;
+  document.querySelectorAll('.sbtn').forEach(b=>{
+    if(ok&&b.classList.contains(v?'t':'f'))b.classList.add('fc');
+    if(!ok){if(b.classList.contains(q.a?'t':'f'))b.classList.add('fc');
+      if(v!==null&&b.classList.contains(v?'t':'f'))b.classList.add('fw')}
+  });
+  if(ok){speedSt.ok++;addXP(10)}else speedSt.no++;
+  record(q.t,ok);speedSt.qi++;setTimeout(showSQ,700);
+}
+function showSR(){
+  const p=Math.round(speedSt.ok/speedSt.tot*100);
+  $('gameArea').innerHTML=`<div class="qcard"><div class="sres">
+    <div class="big">${p}%</div><div class="sub">Speed Round Complete</div>
+    <div class="bd"><div class="bdi"><div class="bdv" style="color:var(--green)">${speedSt.ok}</div><div class="bdl">Correct</div></div>
+    <div class="bdi"><div class="bdv" style="color:var(--red)">${speedSt.no}</div><div class="bdl">Wrong</div></div>
+    <div class="bdi"><div class="bdv" style="color:var(--amber)">${speedSt.ok*10}</div><div class="bdl">XP</div></div></div>
+    <div class="btn-row" style="justify-content:center;margin-top:24px"><button class="btn btn-go" onclick="go()">Play Again</button></div></div></div>`;
+  if(p>=80)confetti();
+}
+
+// ═══════════════════════════════════════════════════
+//  DEBUG
+// ═══════════════════════════════════════════════════
+function loadD(){
+  const q=pick(DEBUG);curQ=q;done=false;
+  $('btnNext').style.display='none';$('btnCheck').style.display='';$('btnCheck').disabled=false;$('btnHint').disabled=hardMode||hints<=0;
+  $('gameArea').innerHTML=`<div class="qcard">
+    <div class="qcard-hdr"><span class="badge badge-${q.t}">${q.t}</span><span class="badge badge-bug">BUG HUNT</span></div>
+    <div class="codeblk" data-lang="java">${q.code}</div>
+    <div class="qtxt">${q.q}</div>
+    <div class="choices" id="choices">${q.c.map((c,i)=>`<div class="ch" data-i="${i}" onclick="sel(this)"><div class="ch-ltr">${'ABCD'[i]}</div><div class="ch-txt">${c}</div></div>`).join('')}</div></div>`;
+}
+function chkD(){
+  const s=document.querySelector('.ch.sel');if(!s)return;done=true;
+  const i=+s.dataset.i,ok=i===curQ.a;
+  document.querySelectorAll('.ch').forEach(c=>{if(+c.dataset.i===curQ.a)c.classList.add('correct');if(+c.dataset.i===i&&!ok)c.classList.add('wrong')});
+  result(ok,curQ.e,curQ.t);
+}
+
+// ═══════════════════════════════════════════════════
+//  HINTS
+// ═══════════════════════════════════════════════════
+function useHint(){
+  if(done||hints<=0||!curQ)return;
+  if(hardMode){toast('No hints in Hard Mode!');return}
+  hints--;$('hintPill').textContent=hints+' hints';$('btnHint').disabled=hardMode||hints<=0;
+  const h=curQ.h||'No hint available for this question.';
+  const existing=$('gameArea').querySelector('.hint-box');
+  if(existing)existing.remove();
+  $('gameArea').querySelector('.qcard').insertAdjacentHTML('beforeend',`<div class="hint-box"><strong>Hint:</strong> ${h}</div>`);
+}
+
+// ═══════════════════════════════════════════════════
+//  RESULTS & XP
+// ═══════════════════════════════════════════════════
+function result(ok,explain,tp){
+  const mult=hardMode?2:1;
+  const pts=ok?(mode==='code'?25*mult:15*mult):0;
+  if(ok){streak++;addXP(pts);if(streak%5===0)hints=Math.min(hints+1,5);confetti()}else{
+    streak=0;
+    if(S.wrongs.length>=10)S.wrongs.shift();
+    S.wrongs.push({q:curQ.q||curQ.qtxt||'',t:tp,ts:Date.now()});
+  }
+  record(tp,ok);
+  $('btnCheck').style.display='none';$('btnNext').style.display='';$('controls').style.display='flex';$('btnHint').disabled=true;
+  const richExplain=buildRichExplain(explain,tp,ok);
+  $('gameArea').innerHTML+=`<div class="result ${ok?'ok':'no'}">${ok?'Correct!':'Incorrect'}${streak>2?` <span style="font-size:.6rem;margin-left:6px">${streak}x streak</span>`:''}<span class="pts">${ok?'+'+pts+' XP':'+0 XP'}${hardMode?' (2x)':''}</span></div>
+    <div class="explain">${richExplain}</div>`;
+}
+
+function buildRichExplain(base,tp,ok){
+  // Build a comprehensive, teaching-style explanation
+  const topicContext={
+    'java':'<strong>Java Fundamentals</strong> — These are the building blocks of every Java program. Understanding OOP, exception handling, and proper logging is essential before moving to networking.',
+    'networking':'<strong>Networking</strong> — These concepts form the foundation of how computers communicate. Understanding protocols, addressing, and the layered model is critical for socket and HTTP programming.',
+    'arch':'<strong>Architecture</strong> — Knowing tier patterns helps you understand why middleware exists and how to design scalable, secure systems. This directly applies to how your servers are structured.',
+    'socket-string':'<strong>Socket Programming (String I/O)</strong> — The stream wrapping chain (InputStream → InputStreamReader → BufferedReader) is the most-tested pattern in the exam. Memorize it cold.',
+    'socket-byte':'<strong>Socket Programming (Byte I/O)</strong> — Byte streams give you raw control. The key pitfall is <code>new String(buffer)</code> vs <code>new String(buffer, 0, bytesRead)</code> — always specify the range.',
+    'threading':'<strong>Multi-Threading & Concurrency</strong> — Thread-per-connection is the standard server pattern. Remember: <code>.start()</code> creates a thread, <code>.run()</code> does NOT. Use ExecutorService for production.',
+    'http':'<strong>HTTP Servers</strong> — The handler pattern (check method → set headers → send headers → write body → close) is always the same. <code>getBytes().length</code>, not <code>length()</code>.',
+    'rest':'<strong>REST & Web Services</strong> — REST uses nouns in URLs, HTTP methods for actions, and JSON for data. SOAP is XML-heavy and better for enterprise/banking.',
+    'exam':'<strong>Exam Pattern</strong> — The mock exam has 20 TODOs each for Socket Server and HTTP Server. Knowing the exact code and order is worth 100 marks total.'
+  };
+  let rich=`<div style="margin-bottom:10px">${base}</div>`;
+  if(!ok){
+    rich+=`<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);color:var(--text-dim);font-size:.68rem;line-height:1.7">
+      <strong style="color:var(--cyan)">Why this matters:</strong> ${topicContext[tp]||'Understanding this concept is important for the exam.'}</div>`;
+  }
+  // Add exam tip for exam questions
+  if(tp==='exam'&&curQ){
+    const todoNum=curQ.n||curQ.todoNum||(curQ.q&&curQ.q.match(/TODO (\d+)/)?.[1]);
+    if(todoNum){
+      rich+=`<div style="margin-top:8px;font-size:.68rem;color:var(--amber)">Exam tip: TODO ${todoNum} is worth marks. Practice writing it from memory until it\'s automatic.</div>`;
+    }
+  }
+  return rich;
+}
+
+function addXP(n){
+  S.xp+=n;const nl=Math.floor(S.xp/200)+1;
+  if(nl>S.lv){S.lv=nl;toast(`Level ${S.lv}!`);hints=Math.min(hints+2,5)}
+  save();ui();
+}
+function record(tp,ok){
+  S.ans++;if(ok)S.cor++;
+  if(!S.ts[tp])S.ts[tp]={a:0,c:0};S.ts[tp].a++;if(ok)S.ts[tp].c++;
+  // track unique questions seen per topic
+  if(!S.uniqueSeen[tp])S.uniqueSeen[tp]=0;
+  S.uniqueSeen[tp]++;
+  save();ui();
+}
+function next(){go()}
+
+// ═══════════════════════════════════════════════════
+//  UI
+// ═══════════════════════════════════════════════════
+function ui(){
+  $('xpNum').textContent=S.xp;$('lvlNum').textContent=S.lv;
+  $('xpBar').style.width=(S.xp%200)/200*100+'%';
+  const sp=$('streakPill');
+  if(streak>=2){sp.style.display='';sp.textContent=streak+'x'}else sp.style.display='none';
+  $('hintPill').textContent=hints+' hints';
+  $('sAnswered').textContent=S.ans;$('sCorrect').textContent=S.cor;
+  $('sAccuracy').textContent=S.ans?Math.round(S.cor/S.ans*100)+'%':'0%';
+  $('sXP').textContent=S.xp;
+
+  // Comprehensive mastery: combines accuracy (70%) + coverage depth (30%)
+  // Coverage = unique questions answered in topic / target (15 per topic to "master")
+  const topicTargets={java:12,networking:16,arch:10,'socket-string':12,'socket-byte':8,threading:14,http:16,rest:10,exam:20};
+  ['java','networking','arch','socket-string','socket-byte','threading','http','rest','exam'].forEach(t=>{
+    const el=$('m-'+t);if(!el)return;const s=S.ts[t];
+    if(!s||!s.a){el.textContent='--';el.className='sb-pct none';return}
+    const acc=s.c/s.a; // 0-1
+    const cov=Math.min(1,(S.uniqueSeen[t]||0)/(topicTargets[t]||15)); // 0-1
+    const mastery=Math.round((acc*0.7+cov*0.3)*100);
+    el.textContent=mastery+'%';
+    el.className='sb-pct '+(mastery>=80?'hi':mastery>=50?'mid':'lo');
+    el.title=`Accuracy: ${Math.round(acc*100)}% | Coverage: ${Math.round(cov*100)}% (${S.uniqueSeen[t]||0}/${topicTargets[t]||15} questions)`;
+  });
+
+  // recent wrongs on home
+  const rw=$('recentWrongs');
+  if(S.wrongs&&S.wrongs.length){
+    rw.innerHTML=`<h4>Review These</h4>${S.wrongs.slice(-5).reverse().map(w=>
+      `<div class="rw-item" onclick="nav('${w.t||'all'}')">${w.q.substring(0,120)}${w.q.length>120?'...':''}</div>`).join('')}`;
+  }else rw.innerHTML='';
+}
+
+function toast(msg){
+  document.querySelectorAll('.toast').forEach(t=>t.remove());
+  const t=document.createElement('div');t.className='toast';t.textContent=msg;
+  document.body.appendChild(t);setTimeout(()=>t.remove(),2500);
+}
+
+function confetti(){
+  const el=document.createElement('div');el.className='confetti';
+  const x=Math.random()*innerWidth*.6+innerWidth*.2,y=Math.random()*100+200;
+  el.style.left=x+'px';el.style.top=y+'px';
+  const colors=['#00ff88','#00e5ff','#ffab00','#b388ff','#ff3d71'];
+  for(let i=0;i<12;i++){
+    const d=document.createElement('div');d.className='confetti-dot';
+    d.style.background=colors[Math.floor(Math.random()*colors.length)];
+    d.style.left=(Math.random()*60-30)+'px';d.style.top=(Math.random()*-20)+'px';
+    d.style.animationDelay=(Math.random()*.3)+'s';
+    d.style.animationDuration=(.8+Math.random()*.6)+'s';
+    el.appendChild(d);
+  }
+  document.body.appendChild(el);setTimeout(()=>el.remove(),2000);
+}
+
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+ui();
+
+// ═══════════════════════════════════════════════════
+//  RGB COLOR CYCLING — shifts --green through hues like RGB lights
+// ═══════════════════════════════════════════════════
+(function colorCycle(){
+  const root=document.documentElement;
+  function tick(){
+    const t=Date.now()/2500;
+    let hue,sat,lit;
+    if(hardMode){
+      hue=355+25*Math.sin(t);
+      sat=80+15*Math.sin(t*1.3);
+      lit=55+12*Math.sin(t*0.7);
+      hue=((hue%360)+360)%360;
+    }else{
+      hue=140+45*Math.sin(t);
+      sat=85+15*Math.sin(t*1.7);
+      lit=55+10*Math.sin(t*0.9);
+    }
+    const main=`hsl(${hue},${sat}%,${lit}%)`;
+    const dim=`hsl(${hue},${sat-10}%,${lit-12}%)`;
+    const dark=`hsl(${hue},${sat-20}%,${lit-30}%)`;
+    const glow=`hsla(${hue},${sat}%,${lit}%,.12)`;
+    root.style.setProperty('--green',main);
+    root.style.setProperty('--green-dim',dim);
+    root.style.setProperty('--green-dark',dark);
+    root.style.setProperty('--green-glow',glow);
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+</script>
+</body>
+</html>
