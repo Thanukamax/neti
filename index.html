@@ -1472,15 +1472,40 @@ let fbUser=null;
 let syncTimeout=null;
 
 function signIn(){
-  const provider=new firebase.auth.GoogleAuthProvider();
-  auth.signInWithPopup(provider).catch(err=>{
-    // popup blocked? try redirect
-    if(err.code==='auth/popup-blocked'||err.code==='auth/popup-closed-by-user'){
-      auth.signInWithRedirect(provider);
-    }else{
-      toast('Sign in failed: '+err.message);
-    }
+  const area=$('authArea');
+  area.innerHTML=`<div style="display:flex;gap:6px;align-items:center">
+    <input id="emailIn" type="email" placeholder="your@email.com" spellcheck="false"
+      style="background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--font-mono);
+      font-size:.6rem;padding:5px 10px;border-radius:8px;width:160px;outline:none">
+    <button class="auth-btn" onclick="sendLink()">Send link</button>
+  </div>`;
+  $('emailIn').focus();
+}
+
+function sendLink(){
+  const email=$('emailIn').value.trim();
+  if(!email){toast('Enter your email');return}
+  const settings={url:location.href,handleCodeInApp:true};
+  auth.sendSignInLinkToEmail(email,settings).then(()=>{
+    localStorage.setItem('neti_email',email);
+    toast('Magic link sent! Check your inbox.');
+    $('authArea').innerHTML=`<span class="auth-btn" style="cursor:default;border-color:var(--amber);color:var(--amber)">Check email</span>`;
+  }).catch(err=>{
+    toast('Error: '+err.message);
   });
+}
+
+// handle magic link on page load
+if(auth.isSignInWithEmailLink(location.href)){
+  let email=localStorage.getItem('neti_email');
+  if(!email)email=prompt('Enter the email you used to sign in:');
+  if(email){
+    auth.signInWithEmailLink(email,location.href).then(()=>{
+      localStorage.removeItem('neti_email');
+      // clean URL
+      history.replaceState(null,'',location.pathname);
+    }).catch(err=>toast('Sign in failed: '+err.message));
+  }
 }
 
 function signOut(){
@@ -1493,11 +1518,12 @@ auth.onAuthStateChanged(async user=>{
   fbUser=user;
   const area=$('authArea');
   if(user){
-    area.innerHTML=`<img class="auth-avatar" src="${user.photoURL||''}" alt="${user.displayName||'User'}"
-      title="${user.displayName} — click to sign out" onclick="signOut()"
-      onerror="this.style.display='none'">
+    const name=user.displayName||user.email||'User';
+    const initial=(user.email||'U')[0].toUpperCase();
+    area.innerHTML=`<div class="auth-avatar" onclick="signOut()" title="${name} — click to sign out"
+      style="display:flex;align-items:center;justify-content:center;font-family:var(--font-display);
+      font-weight:700;font-size:.6rem;color:var(--bg);background:var(--green)">${initial}</div>
       <span class="sync-dot" id="syncDot" title="Synced"></span>`;
-    // load cloud data and merge
     await loadFromCloud();
   }else{
     area.innerHTML=`<button class="auth-btn" onclick="signIn()">Sign in</button>`;
