@@ -9,6 +9,9 @@
 <title>NETI // Lab Trainer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -344,6 +347,18 @@ body{font-family:var(--font-mono);background:var(--bg);color:var(--text);min-hei
 
 .menu-toggle{display:none;background:none;border:none;color:var(--green);font-size:1.3rem;cursor:pointer;
   padding:6px 8px;-webkit-tap-highlight-color:transparent}
+
+/* ═══ AUTH ═══ */
+.auth-btn{background:var(--bg3);border:1px solid var(--border);color:var(--text);font-family:var(--font-mono);
+  font-size:.6rem;padding:5px 12px;border-radius:14px;cursor:pointer;transition:all .15s;
+  display:flex;align-items:center;gap:6px;white-space:nowrap;-webkit-tap-highlight-color:transparent}
+.auth-btn:hover{border-color:var(--green);color:var(--green)}
+.auth-btn img{width:14px;height:14px;border-radius:50%}
+.auth-avatar{width:22px;height:22px;border-radius:50%;border:2px solid var(--green);
+  box-shadow:0 0 8px var(--green-glow);cursor:pointer}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;
+  box-shadow:0 0 6px var(--green);margin-right:2px}
+.sync-dot.off{background:var(--text-dim);box-shadow:none}
 </style>
 </head>
 <body>
@@ -361,6 +376,7 @@ body{font-family:var(--font-mono);background:var(--bg);color:var(--text);min-hei
       </div>
       <div class="hdr-stat"><span>LVL</span><span class="hdr-val" id="lvlNum">1</span></div>
       <div class="streak-pill" id="streakPill" style="display:none">0x</div>
+      <div id="authArea"><button class="auth-btn" onclick="signIn()">Sign in</button></div>
     </div>
   </header>
 
@@ -1435,6 +1451,115 @@ ui();
   }
   tick();
 })();
+
+// ═══════════════════════════════════════════════════
+//  FIREBASE AUTH + CLOUD SYNC
+// ═══════════════════════════════════════════════════
+const firebaseConfig={
+  apiKey:"AIzaSyAPMuCttxW_FTTokyMayqTe8BDGzYmLwII",
+  authDomain:"netithanukamax.firebaseapp.com",
+  projectId:"netithanukamax",
+  storageBucket:"netithanukamax.firebasestorage.app",
+  messagingSenderId:"133524123268",
+  appId:"1:133524123268:web:8a9fbd7d7bce573f6f1cd1"
+};
+firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth();
+const db=firebase.firestore();
+let fbUser=null;
+let syncTimeout=null;
+
+function signIn(){
+  const provider=new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider).catch(err=>{
+    // popup blocked? try redirect
+    if(err.code==='auth/popup-blocked'||err.code==='auth/popup-closed-by-user'){
+      auth.signInWithRedirect(provider);
+    }else{
+      toast('Sign in failed: '+err.message);
+    }
+  });
+}
+
+function signOut(){
+  if(confirm('Sign out? Local progress is kept.')){
+    auth.signOut();
+  }
+}
+
+auth.onAuthStateChanged(async user=>{
+  fbUser=user;
+  const area=$('authArea');
+  if(user){
+    area.innerHTML=`<img class="auth-avatar" src="${user.photoURL||''}" alt="${user.displayName||'User'}"
+      title="${user.displayName} — click to sign out" onclick="signOut()"
+      onerror="this.style.display='none'">
+      <span class="sync-dot" id="syncDot" title="Synced"></span>`;
+    // load cloud data and merge
+    await loadFromCloud();
+  }else{
+    area.innerHTML=`<button class="auth-btn" onclick="signIn()">Sign in</button>`;
+  }
+});
+
+async function loadFromCloud(){
+  if(!fbUser)return;
+  try{
+    const doc=await db.collection('progress').doc(fbUser.uid).get();
+    if(doc.exists){
+      const cloud=doc.data().state;
+      if(cloud&&cloud.xp!==undefined){
+        // merge: keep whichever has more XP (more progress)
+        if(cloud.xp>S.xp){
+          S=cloud;
+          if(!S.uniqueSeen)S.uniqueSeen={};
+          if(!S.wrongs)S.wrongs=[];
+          save();ui();
+          toast('Progress loaded from cloud');
+        }else if(S.xp>cloud.xp){
+          // local is ahead — push to cloud
+          await saveToCloud();
+          toast('Cloud updated with local progress');
+        }else{
+          toast('Synced');
+        }
+      }
+    }else{
+      // no cloud data yet — push local
+      await saveToCloud();
+      toast('Progress saved to cloud');
+    }
+  }catch(err){
+    console.error('Cloud load error:',err);
+    const dot=$('syncDot');if(dot)dot.classList.add('off');
+  }
+}
+
+async function saveToCloud(){
+  if(!fbUser)return;
+  try{
+    await db.collection('progress').doc(fbUser.uid).set({
+      state:JSON.parse(JSON.stringify(S)),
+      updated:firebase.firestore.FieldValue.serverTimestamp(),
+      name:fbUser.displayName||'',
+      email:fbUser.email||''
+    },{merge:true});
+    const dot=$('syncDot');if(dot){dot.classList.remove('off');dot.title='Synced'}
+  }catch(err){
+    console.error('Cloud save error:',err);
+    const dot=$('syncDot');if(dot)dot.classList.add('off');
+  }
+}
+
+// override save() to also sync to cloud (debounced)
+const _origSave=save;
+save=function(){
+  _origSave();
+  if(fbUser){
+    clearTimeout(syncTimeout);
+    syncTimeout=setTimeout(saveToCloud,3000); // batch saves, sync every 3s
+  }
+};
 </script>
 </body>
 </html>
