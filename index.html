@@ -1085,6 +1085,7 @@ function pickUnique(arr){
 //  NAV & MODE
 // ═══════════════════════════════════════════════════
 function nav(t){
+  clearInterval(speedSt.timer);speedSt.timer=null;
   topic=t;
   document.querySelectorAll('.sb-item').forEach(n=>n.classList.remove('active'));
   const el=document.querySelector(`.sb-item[data-topic="${t}"]`);if(el)el.classList.add('active');
@@ -1096,7 +1097,7 @@ function setMode(m){
   mode=m;
   document.querySelectorAll('.sb-mode').forEach(b=>b.classList.remove('active'));
   const el=document.querySelector(`.sb-mode[data-mode="${m}"]`);if(el)el.classList.add('active');
-  if(topic!=='home')go();
+  if(topic==='home'){topic='all';nav('all')}else go();
 }
 function $(id){return document.getElementById(id)}
 
@@ -1104,6 +1105,7 @@ function $(id){return document.getElementById(id)}
 //  GAME ENGINE
 // ═══════════════════════════════════════════════════
 function go(){
+  clearInterval(speedSt.timer);speedSt.timer=null;
   done=false;hints=Math.max(hints,0);
   $('controls').style.display='flex';$('btnNext').style.display='none';
   $('btnCheck').style.display='';$('btnCheck').disabled=false;
