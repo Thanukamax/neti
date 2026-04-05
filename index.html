@@ -355,7 +355,7 @@ body{font-family:var(--font-mono);background:var(--bg);color:var(--text);min-hei
     <button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">&#9776;</button>
     <div class="logo">NETI<span class="logo-sub">// lab trainer</span></div>
     <div class="hdr-stats">
-      <div class="hint-count" id="hintPill" title="Hints remaining">3 hints</div>
+      <div class="hint-count" id="hintPill" title="Hints">hints</div>
       <div class="hdr-stat"><span>XP</span><span class="hdr-val" id="xpNum">0</span>
         <div class="xp-track"><div class="xp-fill" id="xpBar" style="width:0%"></div></div>
       </div>
@@ -1091,7 +1091,7 @@ function go(){
   done=false;hints=Math.max(hints,0);
   $('controls').style.display='flex';$('btnNext').style.display='none';
   $('btnCheck').style.display='';$('btnCheck').disabled=false;
-  $('btnHint').disabled=hardMode||hints<=0;$('hintPill').textContent=hints+' hints';
+  $('btnHint').disabled=false;$('hintPill').textContent=hints+' hints';
 
   const titles={quiz:'Concept Quiz',code:'Code Completion',match:'Pattern Matcher',speed:'Speed Round',debug:'Code Debug'};
   const subs={quiz:'Pick the right answer',code:'Fill in the missing code',match:'Match concepts to definitions',speed:'True/False — beat the clock',debug:'Find the bug'};
@@ -1118,7 +1118,7 @@ function pick(arr){return pickUnique(arr)}
 function loadQ(){
   const q=pick(QZ);curQ=q;done=false;
   $('btnNext').style.display='none';$('btnCheck').style.display='';$('btnCheck').disabled=false;
-  $('btnHint').disabled=hardMode||hints<=0;
+  $('btnHint').disabled=false;
   const hardBadge=hardMode?'<span class="badge badge-bug">HARD</span>':'';
   const genBadge=q.gen?'<span class="badge badge-gen">generated</span>':'';
   $('gameArea').innerHTML=`<div class="qcard">
@@ -1150,7 +1150,7 @@ function chkQ(){
 // ═══════════════════════════════════════════════════
 function loadC(){
   const q=pick(CODE);curQ=q;done=false;
-  $('btnNext').style.display='none';$('btnCheck').style.display='';$('btnCheck').disabled=false;$('btnHint').disabled=hardMode||hints<=0;
+  $('btnNext').style.display='none';$('btnCheck').style.display='';$('btnCheck').disabled=false;$('btnHint').disabled=false;
   const ml=q.ans.includes('\n');
   $('gameArea').innerHTML=`<div class="qcard">
     <div class="qcard-hdr"><span class="badge badge-exam">${q.cat} — TODO ${q.n}</span></div>
@@ -1258,7 +1258,7 @@ function showSR(){
 // ═══════════════════════════════════════════════════
 function loadD(){
   const q=pick(DEBUG);curQ=q;done=false;
-  $('btnNext').style.display='none';$('btnCheck').style.display='';$('btnCheck').disabled=false;$('btnHint').disabled=hardMode||hints<=0;
+  $('btnNext').style.display='none';$('btnCheck').style.display='';$('btnCheck').disabled=false;$('btnHint').disabled=false;
   $('gameArea').innerHTML=`<div class="qcard">
     <div class="qcard-hdr"><span class="badge badge-${q.t}">${q.t}</span><span class="badge badge-bug">BUG HUNT</span></div>
     <div class="codeblk" data-lang="java">${q.code}</div>
@@ -1276,9 +1276,7 @@ function chkD(){
 //  HINTS
 // ═══════════════════════════════════════════════════
 function useHint(){
-  if(done||hints<=0||!curQ)return;
-  if(hardMode){toast('No hints in Hard Mode!');return}
-  hints--;$('hintPill').textContent=hints+' hints';$('btnHint').disabled=hardMode||hints<=0;
+  if(done||!curQ)return;
   const h=curQ.h||'No hint available for this question.';
   const existing=$('gameArea').querySelector('.hint-box');
   if(existing)existing.remove();
@@ -1291,7 +1289,7 @@ function useHint(){
 function result(ok,explain,tp){
   const mult=hardMode?2:1;
   const pts=ok?(mode==='code'?25*mult:15*mult):0;
-  if(ok){streak++;addXP(pts);if(streak%5===0)hints=Math.min(hints+1,5);confetti()}else{
+  if(ok){streak++;addXP(pts);confetti()}else{
     streak=0;
     if(S.wrongs.length>=10)S.wrongs.shift();
     S.wrongs.push({q:curQ.q||curQ.qtxt||'',t:tp,ts:Date.now()});
@@ -1333,7 +1331,7 @@ function buildRichExplain(base,tp,ok){
 
 function addXP(n){
   S.xp+=n;const nl=Math.floor(S.xp/200)+1;
-  if(nl>S.lv){S.lv=nl;toast(`Level ${S.lv}!`);hints=Math.min(hints+2,5)}
+  if(nl>S.lv){S.lv=nl;toast(`Level ${S.lv}!`)}
   save();ui();
 }
 function record(tp,ok){
@@ -1354,7 +1352,7 @@ function ui(){
   $('xpBar').style.width=(S.xp%200)/200*100+'%';
   const sp=$('streakPill');
   if(streak>=2){sp.style.display='';sp.textContent=streak+'x'}else sp.style.display='none';
-  $('hintPill').textContent=hints+' hints';
+  $('hintPill').textContent='hints';
   $('sAnswered').textContent=S.ans;$('sCorrect').textContent=S.cor;
   $('sAccuracy').textContent=S.ans?Math.round(S.cor/S.ans*100)+'%':'0%';
   $('sXP').textContent=S.xp;
