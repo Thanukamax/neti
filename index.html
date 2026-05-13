@@ -6,12 +6,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#080c12">
-<title>NETI // Lab Trainer</title>
+<title>ICT G11 // Programming Trainer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -31,18 +28,10 @@ body{font-family:var(--font-mono);background:var(--bg);color:var(--text);min-hei
   padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);
   padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);
   -webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
-
-/* global color cycling handled by JS → --green var */
-
-/* ═══ CANVAS BG ═══ */
 #bgCanvas{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.4}
-
-/* ═══ SCROLLBAR ═══ */
 ::-webkit-scrollbar{width:5px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--green-dark);border-radius:3px}
-
-/* ═══ LAYOUT ═══ */
 .app{display:grid;grid-template-columns:240px 1fr;grid-template-rows:auto 1fr;min-height:100vh;position:relative;z-index:1}
 .header{grid-column:1/-1;padding:14px 20px;border-bottom:1px solid var(--border);
   display:flex;align-items:center;gap:16px;background:rgba(13,17,23,.92);
@@ -51,8 +40,6 @@ body{font-family:var(--font-mono);background:var(--bg);color:var(--text);min-hei
   backdrop-filter:blur(8px);padding:12px;overflow-y:auto;
   position:sticky;top:56px;height:calc(100vh - 56px)}
 .main{padding:32px 40px;max-width:1200px;min-height:calc(100vh - 56px);margin:0 auto}
-
-/* ═══ HEADER ═══ */
 .logo{font-family:var(--font-display);font-weight:900;font-size:1.3rem;color:var(--green);letter-spacing:3px;
   text-shadow:0 0 12px var(--green),0 0 30px var(--green-glow)}
 .logo-sub{color:var(--text-dim);font-weight:400;font-size:.65rem;letter-spacing:1px;margin-left:6px;opacity:.7}
@@ -64,27 +51,23 @@ body{font-family:var(--font-mono);background:var(--bg);color:var(--text);min-hei
   transition:width .5s ease;box-shadow:0 0 8px var(--green),0 0 20px var(--green-glow)}
 .streak-pill{background:rgba(255,171,0,.1);border:1px solid var(--amber);color:var(--amber);
   padding:2px 8px;border-radius:10px;font-size:.6rem;font-weight:600;letter-spacing:.5px;
-  box-shadow:0 0 10px rgba(255,171,0,.2),0 0 24px rgba(255,171,0,.08);text-shadow:0 0 6px rgba(255,171,0,.3)}
+  box-shadow:0 0 10px rgba(255,171,0,.2);text-shadow:0 0 6px rgba(255,171,0,.3)}
 .hint-count{background:rgba(0,229,255,.1);border:1px solid var(--cyan);color:var(--cyan);
   padding:2px 8px;border-radius:10px;font-size:.6rem;font-weight:600;
   box-shadow:0 0 10px rgba(0,229,255,.15);text-shadow:0 0 6px rgba(0,229,255,.3)}
-
-/* ═══ SIDEBAR ═══ */
 .sb-title{font-family:var(--font-display);font-size:.55rem;font-weight:700;text-transform:uppercase;
   letter-spacing:3px;color:var(--text-dim);margin:12px 0 8px 6px}
 .sb-item{display:flex;align-items:center;gap:7px;padding:7px 10px;border-radius:6px;cursor:pointer;
   font-size:.72rem;color:var(--text-dim);transition:all .15s;border:1px solid transparent;margin-bottom:1px}
 .sb-item:hover{background:var(--green-glow);color:var(--text)}
 .sb-item.active{background:rgba(0,255,136,.08);color:var(--green);border-color:rgba(0,255,136,.15);
-  box-shadow:inset 3px 0 0 var(--green),0 0 12px var(--green-glow);
-  text-shadow:0 0 6px var(--green-glow)}
+  box-shadow:inset 3px 0 0 var(--green),0 0 12px var(--green-glow);text-shadow:0 0 6px var(--green-glow)}
 .sb-icon{width:14px;text-align:center;font-size:.6rem;opacity:.6}
 .sb-pct{margin-left:auto;font-size:.55rem;font-weight:700;padding:1px 6px;border-radius:8px}
 .sb-pct.hi{color:var(--green);background:rgba(0,255,136,.08)}
 .sb-pct.mid{color:var(--amber);background:rgba(255,171,0,.08)}
 .sb-pct.lo{color:var(--red);background:rgba(255,61,113,.08)}
 .sb-pct.none{color:var(--text-dim)}
-
 .sb-sep{border-top:1px solid var(--border);margin:10px 0}
 .sb-mode{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px;cursor:pointer;
   font-size:.72rem;color:var(--text);transition:all .2s;border:1px solid var(--border);margin-bottom:4px;background:var(--bg3)}
@@ -92,22 +75,17 @@ body{font-family:var(--font-mono);background:var(--bg);color:var(--text);min-hei
 .sb-mode.active{border-color:var(--green);color:var(--green);background:rgba(0,255,136,.06);
   box-shadow:0 0 12px var(--green-glow);text-shadow:0 0 6px var(--green-glow)}
 .sb-mode-icon{font-size:.85rem;width:20px;text-align:center}
-
-/* ═══ VIEWS ═══ */
 .view{display:none;animation:fadeSlide .25s ease}
 .view.active{display:block}
 @keyframes fadeSlide{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-
 .sec-title{font-family:var(--font-display);font-size:1.5rem;font-weight:800;color:var(--text-bright);letter-spacing:-.5px}
 .sec-sub{font-size:.75rem;color:var(--text-dim);margin:2px 0 20px}
-
-/* ═══ HOME ═══ */
 .home-hero{text-align:center;padding:48px 16px 32px}
 .hero-logo{font-family:var(--font-display);font-size:2.8rem;font-weight:900;color:var(--green);letter-spacing:5px;
   position:relative;text-shadow:0 0 20px var(--green),0 0 50px var(--green-glow),0 0 80px var(--green-glow)}
-.hero-logo::after{content:'JAVA NETWORK PROGRAMMING';display:block;font-size:.55rem;font-weight:400;
-  letter-spacing:6px;color:var(--text-dim);margin-top:4px}
-.hero-desc{color:var(--text-dim);font-size:.78rem;margin-top:12px;max-width:440px;margin-inline:auto;line-height:1.6}
+.hero-logo::after{content:'ICT GRADE 11 — CHAPTER 1: PROGRAMMING';display:block;font-size:.5rem;font-weight:400;
+  letter-spacing:5px;color:var(--text-dim);margin-top:4px}
+.hero-desc{color:var(--text-dim);font-size:.78rem;margin-top:12px;max-width:480px;margin-inline:auto;line-height:1.6}
 .home-grid{display:grid;grid-template-columns:1fr;gap:16px;margin-top:44px}
 .hcard{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:36px 40px;
   cursor:pointer;transition:all .25s;position:relative;overflow:hidden;
@@ -115,67 +93,56 @@ body{font-family:var(--font-mono);background:var(--bg);color:var(--text);min-hei
 .hcard::after{content:'';position:absolute;top:0;left:0;bottom:0;width:3px;
   background:var(--green);opacity:0;transition:opacity .3s;border-radius:3px;
   box-shadow:0 0 10px var(--green),0 0 20px var(--green-glow)}
-.hcard:hover{border-color:var(--green);transform:translateX(4px);box-shadow:0 8px 32px rgba(0,0,0,.3),0 0 20px var(--green-glow),0 0 40px var(--green-glow)}
-.hcard:hover::after{opacity:1;animation:breathe 2s ease-in-out infinite}
+.hcard:hover{border-color:var(--green);transform:translateX(4px);box-shadow:0 8px 32px rgba(0,0,0,.3),0 0 20px var(--green-glow)}
+.hcard:hover::after{opacity:1}
 .hcard-icon{font-size:2.2rem;flex-shrink:0;width:50px;text-align:center}
 .hcard h4{font-family:var(--font-display);font-weight:700;color:var(--text-bright);font-size:1.05rem;margin-bottom:4px}
 .hcard p{font-size:.75rem;color:var(--text-dim);line-height:1.6}
-
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:44px}
 .stat-box{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:32px 20px;text-align:center}
 .stat-box .v{font-family:var(--font-display);font-size:1.8rem;font-weight:800;color:var(--green);
   text-shadow:0 0 10px var(--green-glow),0 0 25px var(--green-glow)}
 .stat-box .l{font-size:.6rem;color:var(--text-dim);margin-top:6px;text-transform:uppercase;letter-spacing:2px}
-
-/* breathe handled globally via --breathe JS var */
-
 .recent-wrongs{margin-top:24px;text-align:left}
 .recent-wrongs h4{font-family:var(--font-display);font-size:.75rem;font-weight:700;color:var(--text-dim);
   text-transform:uppercase;letter-spacing:2px;margin-bottom:10px}
 .rw-item{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px 14px;
   margin-bottom:6px;font-size:.72rem;color:var(--text);line-height:1.5;cursor:pointer;transition:all .15s}
 .rw-item:hover{border-color:var(--cyan)}
-.rw-item code{color:var(--green);background:var(--bg);padding:1px 4px;border-radius:3px;font-size:.68rem}
-
-/* ═══ Q CARD ═══ */
 .qcard{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:20px 22px;margin-bottom:14px}
 .qcard-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:8px;flex-wrap:wrap}
 .badge{font-size:.55rem;padding:3px 10px;border-radius:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px}
-.badge-java{background:rgba(255,171,0,.1);color:var(--amber);border:1px solid rgba(255,171,0,.15)}
-.badge-networking{background:rgba(0,229,255,.1);color:var(--cyan);border:1px solid rgba(0,229,255,.15)}
-.badge-arch{background:rgba(0,229,255,.1);color:var(--cyan);border:1px solid rgba(0,229,255,.15)}
-.badge-socket-string,.badge-socket-byte{background:rgba(0,255,136,.1);color:var(--green);border:1px solid rgba(0,255,136,.15)}
-.badge-threading{background:rgba(179,136,255,.1);color:var(--purple);border:1px solid rgba(179,136,255,.15)}
-.badge-http{background:rgba(179,136,255,.1);color:var(--purple);border:1px solid rgba(179,136,255,.15)}
-.badge-rest{background:rgba(255,61,113,.1);color:var(--red);border:1px solid rgba(255,61,113,.15)}
-.badge-exam{background:rgba(0,255,136,.1);color:var(--green);border:1px solid rgba(0,255,136,.15)}
-.badge-bug{background:rgba(255,61,113,.1);color:var(--red);border:1px solid rgba(255,61,113,.15)}
-.badge-gen{background:rgba(179,136,255,.08);color:var(--purple);border:1px solid rgba(179,136,255,.12);font-style:italic}
+.badge-analyze{background:rgba(255,171,0,.1);color:var(--amber);border:1px solid rgba(255,171,0,.15)}
+.badge-algo{background:rgba(179,136,255,.1);color:var(--purple);border:1px solid rgba(179,136,255,.15)}
+.badge-flowchart{background:rgba(0,229,255,.1);color:var(--cyan);border:1px solid rgba(0,229,255,.15)}
+.badge-identifiers{background:rgba(0,255,136,.1);color:var(--green);border:1px solid rgba(0,255,136,.15)}
+.badge-datatypes{background:rgba(0,229,255,.1);color:var(--cyan);border:1px solid rgba(0,229,255,.15)}
+.badge-operators{background:rgba(255,171,0,.1);color:var(--amber);border:1px solid rgba(255,171,0,.15)}
+.badge-selection{background:rgba(179,136,255,.1);color:var(--purple);border:1px solid rgba(179,136,255,.15)}
+.badge-repetition{background:rgba(0,255,136,.1);color:var(--green);border:1px solid rgba(0,255,136,.15)}
+.badge-nested{background:rgba(0,229,255,.1);color:var(--cyan);border:1px solid rgba(0,229,255,.15)}
+.badge-subprog{background:rgba(179,136,255,.1);color:var(--purple);border:1px solid rgba(179,136,255,.15)}
+.badge-exam{background:rgba(255,61,113,.1);color:var(--red);border:1px solid rgba(255,61,113,.15)}
 .qnum{font-size:.6rem;color:var(--text-dim)}
 .qtxt{font-size:.85rem;color:var(--text-bright);line-height:1.7;margin-bottom:16px}
 .qtxt code{background:var(--bg);padding:2px 5px;border-radius:3px;color:var(--green);font-size:.78rem;border:1px solid var(--border)}
-
-/* ═══ CODE BLOCK ═══ */
 .codeblk{background:#0b0f16;border:1px solid var(--border);border-radius:8px;padding:14px 18px;
   font-size:.75rem;line-height:1.85;overflow-x:auto;margin:10px 0;font-family:var(--font-mono);position:relative}
 .codeblk::before{content:attr(data-lang);position:absolute;top:5px;right:10px;font-size:.5rem;
   color:var(--text-dim);text-transform:uppercase;letter-spacing:2px}
 .kw{color:#ff7b72}.ty{color:#79c0ff}.st{color:#a5d6ff}.cm{color:#545d68;font-style:italic}
 .fn{color:#d2a8ff}.nm{color:#79c0ff}.an{color:#ffa657}.op{color:#c9d1d9}
-
-.code-blank{display:inline-block;min-width:220px;border-bottom:2px dashed rgba(0,255,136,.4);
+.code-blank{display:inline-block;min-width:280px;border-bottom:2px dashed rgba(0,255,136,.4);
   padding:2px 4px;background:rgba(0,255,136,.04);border-radius:3px 3px 0 0}
 .code-input{background:transparent;border:none;color:var(--green);font-family:var(--font-mono);
   font-size:.75rem;width:100%;outline:none;caret-color:var(--green)}
 .code-input::placeholder{color:rgba(0,255,136,.2)}
-
-/* ═══ CHOICES ═══ */
 .choices{display:flex;flex-direction:column;gap:6px}
 .ch{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-radius:7px;
   border:1px solid var(--border);cursor:pointer;transition:all .12s;background:var(--bg3)}
 .ch:hover{border-color:rgba(0,255,136,.3);background:rgba(0,255,136,.04)}
 .ch.sel{border-color:var(--green);background:rgba(0,255,136,.06)}
-.ch.correct{border-color:var(--green);background:rgba(0,255,136,.08);box-shadow:0 0 16px var(--green-glow),0 0 32px var(--green-glow)}
+.ch.correct{border-color:var(--green);background:rgba(0,255,136,.08);box-shadow:0 0 16px var(--green-glow)}
 .ch.wrong{border-color:var(--red);background:rgba(255,61,113,.06)}
 .ch-ltr{width:20px;height:20px;border-radius:50%;border:1px solid var(--border);
   display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:600;
@@ -184,8 +151,6 @@ body{font-family:var(--font-mono);background:var(--bg);color:var(--text);min-hei
 .ch.correct .ch-ltr{border-color:var(--green);background:var(--green);color:var(--bg)}
 .ch.wrong .ch-ltr{border-color:var(--red);background:var(--red);color:#fff}
 .ch-txt{font-size:.75rem;color:var(--text);line-height:1.5}
-
-/* ═══ MATCH ═══ */
 .match-grid{display:grid;grid-template-columns:1fr 30px 1fr;gap:6px;align-items:start}
 .match-col{display:flex;flex-direction:column;gap:6px}
 .mi{padding:9px 12px;border-radius:7px;border:1px solid var(--border);font-size:.7rem;cursor:pointer;
@@ -197,8 +162,6 @@ body{font-family:var(--font-mono);background:var(--bg);color:var(--text);min-hei
 @keyframes shake{25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
 .match-mid{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;
   color:var(--text-dim);font-size:.7rem;padding-top:8px}
-
-/* ═══ SPEED ═══ */
 .speed-bar{height:4px;background:var(--bg);border-radius:2px;overflow:hidden;margin-bottom:18px}
 .speed-fill{height:100%;background:linear-gradient(90deg,var(--red),var(--amber),var(--green));transition:width .08s linear}
 .speed-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
@@ -209,8 +172,6 @@ body{font-family:var(--font-mono);background:var(--bg);color:var(--text);min-hei
 .sbtn.f:hover{border-color:var(--red);color:var(--red)}
 .sbtn.fc{border-color:var(--green)!important;background:rgba(0,255,136,.15)!important;color:var(--green)!important}
 .sbtn.fw{border-color:var(--red)!important;background:rgba(255,61,113,.15)!important;color:var(--red)!important}
-
-/* ═══ HINT ═══ */
 .hint-box{background:rgba(0,229,255,.04);border:1px solid rgba(0,229,255,.15);border-left:3px solid var(--cyan);
   border-radius:0 8px 8px 0;padding:12px 16px;margin-top:12px;font-size:.72rem;line-height:1.6;
   color:var(--cyan-dim);animation:fadeSlide .25s ease}
@@ -219,34 +180,25 @@ body{font-family:var(--font-mono);background:var(--bg);color:var(--text);min-hei
   font-size:.65rem;padding:4px 12px;border-radius:14px;cursor:pointer;transition:all .15s;margin-right:8px}
 .hint-btn:hover{background:rgba(0,229,255,.1)}
 .hint-btn:disabled{opacity:.3;cursor:not-allowed}
-
-/* ═══ EXPLAIN ═══ */
 .explain{background:rgba(0,0,0,.2);border:1px solid var(--border);border-left:3px solid var(--cyan);
   border-radius:0 10px 10px 0;padding:20px 24px;margin-top:16px;font-size:.78rem;line-height:1.8;
   color:var(--text);animation:fadeSlide .25s ease}
 .explain strong{color:var(--cyan)}
 .explain code{background:var(--bg3);padding:2px 6px;border-radius:3px;color:var(--green);font-size:.72rem}
-
-/* ═══ BTNS ═══ */
 .btn{font-family:var(--font-mono);padding:8px 18px;border-radius:7px;border:1px solid var(--border);
   cursor:pointer;font-size:.72rem;transition:all .15s;background:var(--bg3);color:var(--text)}
 .btn:hover{border-color:var(--green);color:var(--green)}
 .btn-go{background:var(--green-dark);border-color:var(--green);color:var(--green)}
-.btn-go:hover{background:rgba(0,255,136,.15);box-shadow:0 0 16px var(--green-glow),0 0 32px var(--green-glow)}
+.btn-go:hover{background:rgba(0,255,136,.15);box-shadow:0 0 16px var(--green-glow)}
 .btn:disabled{opacity:.3;cursor:not-allowed;pointer-events:none}
 .btn-row{display:flex;gap:8px;margin-top:16px;align-items:center;flex-wrap:wrap}
 .spacer{flex:1}
-
-/* ═══ RESULT ═══ */
 .result{padding:10px 16px;border-radius:7px;font-size:.75rem;font-weight:500;margin-top:14px;
   display:flex;align-items:center;gap:8px;animation:fadeSlide .25s ease}
 .result.ok{background:rgba(0,255,136,.06);border:1px solid rgba(0,255,136,.15);color:var(--green);
-  box-shadow:0 0 16px var(--green-glow),0 0 32px var(--green-glow)}
-.result.no{background:rgba(255,61,113,.06);border:1px solid rgba(255,61,113,.15);color:var(--red);
-  box-shadow:0 0 16px rgba(255,61,113,.12),0 0 32px rgba(255,61,113,.06)}
+  box-shadow:0 0 16px var(--green-glow)}
+.result.no{background:rgba(255,61,113,.06);border:1px solid rgba(255,61,113,.15);color:var(--red)}
 .result .pts{margin-left:auto;font-weight:700;font-size:.68rem}
-
-/* ═══ SPEED RESULTS ═══ */
 .sres{text-align:center;padding:36px 16px}
 .sres .big{font-family:var(--font-display);font-size:3rem;font-weight:900;color:var(--green)}
 .sres .sub{color:var(--text-dim);font-size:.8rem;margin-top:2px}
@@ -254,32 +206,26 @@ body{font-family:var(--font-mono);background:var(--bg);color:var(--text);min-hei
 .sres .bdi{text-align:center}
 .sres .bdv{font-size:1.3rem;font-weight:700}
 .sres .bdl{font-size:.55rem;color:var(--text-dim);margin-top:2px;text-transform:uppercase;letter-spacing:1px}
-
-/* ═══ TOPIC CHIPS ═══ */
 .chips{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:16px}
 .chip{padding:3px 10px;border-radius:14px;font-size:.6rem;cursor:pointer;border:1px solid var(--border);
   color:var(--text-dim);transition:all .12s;background:var(--bg3)}
 .chip:hover{border-color:var(--green)}
 .chip.on{border-color:var(--green);color:var(--green);background:rgba(0,255,136,.06);
   box-shadow:0 0 10px var(--green-glow);text-shadow:0 0 6px var(--green-glow)}
-
-/* ═══ TOAST ═══ */
 .toast{position:fixed;bottom:20px;right:20px;padding:10px 18px;border-radius:7px;font-size:.72rem;z-index:1000;
   animation:toastIn .3s ease;background:var(--bg3);border:1px solid var(--green);color:var(--green);
   box-shadow:0 6px 20px rgba(0,0,0,.5)}
 @keyframes toastIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
-
-/* ═══ CONFETTI ═══ */
 .confetti{position:fixed;pointer-events:none;z-index:9998}
 .confetti-dot{position:absolute;width:6px;height:6px;border-radius:50%;animation:confettiFall 1.2s ease-out forwards}
 @keyframes confettiFall{from{opacity:1;transform:translateY(0) rotate(0deg)}to{opacity:0;transform:translateY(120px) rotate(360deg)}}
-
-/* ═══ MOBILE ═══ */
+.menu-toggle{display:none;background:none;border:none;color:var(--green);font-size:1.3rem;cursor:pointer;
+  padding:6px 8px;-webkit-tap-highlight-color:transparent}
 @media(max-width:768px){
   html{font-size:15px}
   .app{grid-template-columns:1fr}
   .sidebar{display:none;position:fixed;left:0;top:56px;width:280px;height:calc(100vh - 56px);z-index:200;
-    box-shadow:4px 0 24px rgba(0,0,0,.5);overflow-y:auto;-webkit-overflow-scrolling:touch}
+    box-shadow:4px 0 24px rgba(0,0,0,.5);overflow-y:auto}
   .sidebar.open{display:block}
   .main{padding:16px 14px;max-width:100%}
   .header{padding:12px 14px;gap:10px}
@@ -289,21 +235,17 @@ body{font-family:var(--font-mono);background:var(--bg);color:var(--text);min-hei
   .hdr-stat{font-size:.6rem}
   .xp-track{width:60px}
   .hint-count,.streak-pill{font-size:.55rem;padding:2px 6px}
-
-  /* home */
   .home-hero{padding:28px 8px 20px}
   .hero-logo{font-size:2rem;letter-spacing:3px}
-  .hero-logo::after{font-size:.45rem;letter-spacing:4px}
+  .hero-logo::after{font-size:.42rem;letter-spacing:3px}
   .hero-desc{font-size:.72rem;max-width:100%}
-  .home-grid{grid-template-columns:1fr;gap:12px;margin-top:24px}
+  .home-grid{gap:12px;margin-top:24px}
   .hcard{padding:20px 18px;gap:16px}
   .hcard-icon{font-size:1.6rem;width:40px}
   .hcard h4{font-size:.9rem}
   .stats-row{grid-template-columns:repeat(2,1fr);gap:10px;margin-top:20px}
   .stat-box{padding:18px 12px}
   .stat-box .v{font-size:1.4rem}
-
-  /* game */
   .sec-title{font-size:1.2rem}
   .chips{gap:4px;margin-bottom:12px}
   .chip{padding:4px 8px;font-size:.55rem}
@@ -312,30 +254,21 @@ body{font-family:var(--font-mono);background:var(--bg);color:var(--text);min-hei
   .codeblk{padding:12px 14px;font-size:.68rem;line-height:1.7}
   .ch{padding:10px 12px;gap:8px}
   .ch-txt{font-size:.72rem}
-  .code-blank{min-width:160px}
+  .code-blank{min-width:200px}
   .code-input{font-size:.7rem}
   .btn-row{gap:6px;margin-top:14px}
   .btn{padding:10px 14px;font-size:.7rem}
   .hint-btn{font-size:.6rem;padding:5px 10px}
   .explain{padding:14px 16px;font-size:.72rem}
   .result{padding:10px 14px;font-size:.72rem}
-
-  /* speed */
   .sbtn{padding:18px 10px;font-size:.85rem}
   .speed-btns{gap:8px}
-
-  /* match */
   .match-grid{grid-template-columns:1fr;gap:4px}
   .match-mid{display:none}
   .mi{padding:10px 12px;font-size:.68rem}
-
-  /* recent wrongs */
   .rw-item{padding:10px 12px;font-size:.68rem}
-
   .menu-toggle{display:block!important}
 }
-
-/* extra small phones */
 @media(max-width:390px){
   html{font-size:14px}
   .header{padding:10px 10px}
@@ -344,77 +277,58 @@ body{font-family:var(--font-mono);background:var(--bg);color:var(--text);min-hei
   .qcard{padding:14px 12px}
   .sbtn{padding:16px 8px;font-size:.8rem}
 }
-
-.menu-toggle{display:none;background:none;border:none;color:var(--green);font-size:1.3rem;cursor:pointer;
-  padding:6px 8px;-webkit-tap-highlight-color:transparent}
-
-/* ═══ AUTH ═══ */
-.auth-btn{background:var(--bg3);border:1px solid var(--border);color:var(--text);font-family:var(--font-mono);
-  font-size:.6rem;padding:5px 12px;border-radius:14px;cursor:pointer;transition:all .15s;
-  display:flex;align-items:center;gap:6px;white-space:nowrap;-webkit-tap-highlight-color:transparent}
-.auth-btn:hover{border-color:var(--green);color:var(--green)}
-.auth-btn img{width:14px;height:14px;border-radius:50%}
-.auth-avatar{width:22px;height:22px;border-radius:50%;border:2px solid var(--green);
-  box-shadow:0 0 8px var(--green-glow);cursor:pointer}
-.sync-dot{width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;
-  box-shadow:0 0 6px var(--green);margin-right:2px}
-.sync-dot.off{background:var(--text-dim);box-shadow:none}
 </style>
 </head>
 <body>
-
 <canvas id="bgCanvas"></canvas>
-
 <div class="app">
   <header class="header">
     <button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">&#9776;</button>
-    <div class="logo">NETI<span class="logo-sub">// lab trainer</span></div>
+    <div class="logo">ICT<span class="logo-sub">// g11 pascal trainer</span></div>
     <div class="hdr-stats">
-      <div class="hint-count" id="hintPill" title="Hints">hints</div>
+      <div class="hint-count" id="hintPill">hints</div>
       <div class="hdr-stat"><span>XP</span><span class="hdr-val" id="xpNum">0</span>
         <div class="xp-track"><div class="xp-fill" id="xpBar" style="width:0%"></div></div>
       </div>
       <div class="hdr-stat"><span>LVL</span><span class="hdr-val" id="lvlNum">1</span></div>
       <div class="streak-pill" id="streakPill" style="display:none">0x</div>
-      <div id="authArea"><button class="auth-btn" onclick="signIn()">Sign in</button></div>
     </div>
   </header>
 
   <aside class="sidebar" id="sidebar">
     <div class="sb-title">Topics</div>
     <div class="sb-item active" data-topic="home" onclick="nav('home')"><span class="sb-icon">~</span>Dashboard</div>
-    <div class="sb-item" data-topic="java" onclick="nav('java')"><span class="sb-icon">$</span>Java Fundamentals<span class="sb-pct none" id="m-java">--</span></div>
-    <div class="sb-item" data-topic="networking" onclick="nav('networking')"><span class="sb-icon">$</span>Networking<span class="sb-pct none" id="m-networking">--</span></div>
-    <div class="sb-item" data-topic="arch" onclick="nav('arch')"><span class="sb-icon">$</span>Architecture<span class="sb-pct none" id="m-arch">--</span></div>
-    <div class="sb-item" data-topic="socket-string" onclick="nav('socket-string')"><span class="sb-icon">$</span>Socket (String)<span class="sb-pct none" id="m-socket-string">--</span></div>
-    <div class="sb-item" data-topic="socket-byte" onclick="nav('socket-byte')"><span class="sb-icon">$</span>Socket (Byte)<span class="sb-pct none" id="m-socket-byte">--</span></div>
-    <div class="sb-item" data-topic="threading" onclick="nav('threading')"><span class="sb-icon">$</span>Multi-Threading<span class="sb-pct none" id="m-threading">--</span></div>
-    <div class="sb-item" data-topic="http" onclick="nav('http')"><span class="sb-icon">$</span>HTTP Servers<span class="sb-pct none" id="m-http">--</span></div>
-    <div class="sb-item" data-topic="rest" onclick="nav('rest')"><span class="sb-icon">$</span>REST & Web Services<span class="sb-pct none" id="m-rest">--</span></div>
-    <div class="sb-item" data-topic="exam" onclick="nav('exam')"><span class="sb-icon">$</span>Exam TODOs<span class="sb-pct none" id="m-exam">--</span></div>
+    <div class="sb-item" data-topic="analyze" onclick="nav('analyze')"><span class="sb-icon">1.1</span>Problem Analysis<span class="sb-pct none" id="m-analyze">--</span></div>
+    <div class="sb-item" data-topic="algo" onclick="nav('algo')"><span class="sb-icon">1.2</span>Algorithms<span class="sb-pct none" id="m-algo">--</span></div>
+    <div class="sb-item" data-topic="flowchart" onclick="nav('flowchart')"><span class="sb-icon">1.3</span>Flowcharts<span class="sb-pct none" id="m-flowchart">--</span></div>
+    <div class="sb-item" data-topic="identifiers" onclick="nav('identifiers')"><span class="sb-icon">1.4</span>Identifiers<span class="sb-pct none" id="m-identifiers">--</span></div>
+    <div class="sb-item" data-topic="datatypes" onclick="nav('datatypes')"><span class="sb-icon">1.4</span>Data Types<span class="sb-pct none" id="m-datatypes">--</span></div>
+    <div class="sb-item" data-topic="operators" onclick="nav('operators')"><span class="sb-icon">1.4</span>Operators<span class="sb-pct none" id="m-operators">--</span></div>
+    <div class="sb-item" data-topic="selection" onclick="nav('selection')"><span class="sb-icon">1.4</span>Selection (IF/CASE)<span class="sb-pct none" id="m-selection">--</span></div>
+    <div class="sb-item" data-topic="repetition" onclick="nav('repetition')"><span class="sb-icon">1.4</span>Repetition (Loops)<span class="sb-pct none" id="m-repetition">--</span></div>
+    <div class="sb-item" data-topic="nested" onclick="nav('nested')"><span class="sb-icon">1.4</span>Arrays &amp; Nested<span class="sb-pct none" id="m-nested">--</span></div>
+    <div class="sb-item" data-topic="subprog" onclick="nav('subprog')"><span class="sb-icon">1.5</span>Sub-programs<span class="sb-pct none" id="m-subprog">--</span></div>
+    <div class="sb-item" data-topic="exam" onclick="nav('exam')"><span class="sb-icon">*</span>Exam Practice<span class="sb-pct none" id="m-exam">--</span></div>
     <div class="sb-sep"></div>
     <div class="sb-title">Game Modes</div>
     <div class="sb-mode active" data-mode="quiz" onclick="setMode('quiz')"><span class="sb-mode-icon">?</span>Concept Quiz</div>
     <div class="sb-mode" data-mode="code" onclick="setMode('code')"><span class="sb-mode-icon">&lt;/&gt;</span>Code Completion</div>
     <div class="sb-mode" data-mode="match" onclick="setMode('match')"><span class="sb-mode-icon">=</span>Pattern Matcher</div>
     <div class="sb-mode" data-mode="speed" onclick="setMode('speed')"><span class="sb-mode-icon">!</span>Speed Round</div>
-    <div class="sb-mode" data-mode="debug" onclick="setMode('debug')"><span class="sb-mode-icon">x</span>Code Debug</div>
     <div class="sb-sep"></div>
-    <div class="sb-mode" id="hardBtn" onclick="toggleHard()" style="color:var(--text-dim)"><span class="sb-mode-icon">&#9760;</span>Hard Mode</div>
     <div class="sb-mode" onclick="resetAll()" style="color:var(--red);border-color:rgba(255,61,113,.15)"><span class="sb-mode-icon">!</span>Reset Progress</div>
   </aside>
 
   <main class="main">
     <div class="view active" id="v-home">
       <div class="home-hero">
-        <div class="hero-logo">NETI</div>
-        <p class="hero-desc">Master Java Network Programming through interactive challenges. Choose a mode and topic to start drilling. Hints available when you're stuck.</p>
+        <div class="hero-logo">PASCAL</div>
+        <p class="hero-desc">ICT Grade 11 Chapter 1 — Programming. Master algorithms, flowcharts, and Pascal through interactive exercises. Replaces notebook drills.</p>
         <div class="home-grid">
-          <div class="hcard" onclick="setMode('quiz');nav('all')"><div class="hcard-icon">?</div><h4>Concept Quiz</h4><p>MCQs across all topics</p></div>
-          <div class="hcard" onclick="setMode('code');nav('exam')"><div class="hcard-icon">&lt;/&gt;</div><h4>Code Completion</h4><p>Fill in the exam TODOs</p></div>
-          <div class="hcard" onclick="setMode('match');nav('all')"><div class="hcard-icon">=</div><h4>Pattern Matcher</h4><p>Match concepts to defs</p></div>
-          <div class="hcard" onclick="setMode('speed');nav('all')"><div class="hcard-icon">!</div><h4>Speed Round</h4><p>True/False, beat the clock</p></div>
-          <div class="hcard" onclick="setMode('debug');nav('all')"><div class="hcard-icon">x</div><h4>Code Debug</h4><p>Find the bug</p></div>
+          <div class="hcard" onclick="setMode('quiz');nav('all')"><div class="hcard-icon">?</div><h4>Concept Quiz</h4><p>MCQs covering all textbook sections</p></div>
+          <div class="hcard" onclick="setMode('code');nav('all')"><div class="hcard-icon">&lt;/&gt;</div><h4>Code Completion</h4><p>Fill in Pascal code from textbook programs</p></div>
+          <div class="hcard" onclick="setMode('match');nav('all')"><div class="hcard-icon">=</div><h4>Pattern Matcher</h4><p>Match terms to definitions</p></div>
+          <div class="hcard" onclick="setMode('speed');nav('all')"><div class="hcard-icon">!</div><h4>Speed Round</h4><p>True/False — beat the clock</p></div>
         </div>
       </div>
       <div class="stats-row">
@@ -444,9 +358,7 @@ body{font-family:var(--font-mono);background:var(--bg);color:var(--text);min-hei
 </div>
 
 <script>
-// ═══════════════════════════════════════════════════
-//  BG PARTICLES
-// ═══════════════════════════════════════════════════
+// ── BG PARTICLES ──
 (function(){
   const c=document.getElementById('bgCanvas'),x=c.getContext('2d');
   let W,H;const dots=[];
@@ -467,623 +379,718 @@ body{font-family:var(--font-mono);background:var(--bg);color:var(--text);min-hei
   draw();
 })();
 
-// color cycling moved to end of script (needs hardMode variable)
-
-// ═══════════════════════════════════════════════════
-//  STATE
-// ═══════════════════════════════════════════════════
-let S=load(), mode='quiz', topic='home', curQ=null, done=false, streak=0, hints=3, hardMode=false;
+// ── STATE ──
+let S=load(), mode='quiz', topic='home', curQ=null, done=false, streak=0;
 let matchSt={left:null,pairs:[],matched:0,total:0};
 let speedSt={timer:null,tl:0,sc:0,tot:0,qi:0,qs:[],ok:0,no:0};
 
 function def(){return{xp:0,lv:1,ans:0,cor:0,ts:{},wrongs:[],uniqueSeen:{}}}
-function load(){try{const s=JSON.parse(localStorage.getItem('nc2'));if(s&&s.xp!==undefined){if(!s.uniqueSeen)s.uniqueSeen={};return s}return def()}catch{return def()}}
-function save(){localStorage.setItem('nc2',JSON.stringify(S))}
-function resetAll(){if(confirm('Reset all progress?')){S=def();streak=0;hints=3;hardMode=false;applyTheme();save();ui();nav('home');toast('Reset done')}}
-function toggleHard(){
-  if(S.lv<5){toast('Reach Level 5 to unlock Hard Mode!');return}
-  hardMode=!hardMode;applyTheme();toast(hardMode?'HARD MODE ACTIVATED':'Normal mode');if(topic!=='home')go();
-}
-function applyTheme(){
-  // color cycling JS loop reads hardMode flag directly — no need to set vars here
-  const hb=$('hardBtn');if(hb){hb.textContent=hardMode?'HARD MODE ON':'Hard Mode';
-    hb.style.color=hardMode?'var(--red)':'var(--text-dim)';hb.style.borderColor=hardMode?'var(--red)':'var(--border)'}
-}
+function load(){try{const s=JSON.parse(localStorage.getItem('ict11'));if(s&&s.xp!==undefined){if(!s.uniqueSeen)s.uniqueSeen={};return s}return def()}catch{return def()}}
+function save(){localStorage.setItem('ict11',JSON.stringify(S))}
+function resetAll(){if(confirm('Reset all progress?')){S=def();streak=0;save();ui();nav('home');toast('Progress reset')}}
 
-// ═══════════════════════════════════════════════════
-//  MASSIVE QUESTION BANKS
-// ═══════════════════════════════════════════════════
+// ── QUESTION BANKS ──
+
 const QZ=[
-  // ─── JAVA ───
-  {t:'java',q:'What keyword distinguishes an instance field from a constructor parameter with the same name?',
-   c:['super','self','this','var'],a:2,h:'It starts with "th" and refers to the current object.',
-   e:'<code>this</code> refers to the current object instance: <code>this.name = name;</code>'},
-  {t:'java',q:'Encapsulation means making fields <code>______</code> and exposing them through getters/setters.',
-   c:['static','public','final','private'],a:3,h:'It hides data from outside the class.',
-   e:'<strong>private</strong> fields prevent direct access, enabling validation in setters.'},
-  {t:'java',q:'The <code>finally</code> block runs:',
-   c:['Only if an exception occurs','Only if no exception','Always, regardless of exceptions','Only when called'],a:2,h:'Think about cleanup — it must ALWAYS happen.',
-   e:'<code>finally</code> always runs — use it for cleanup like closing resources.'},
-  {t:'java',q:'Which logging level indicates a critical failure in <code>java.util.logging</code>?',
-   c:['INFO','WARNING','DEBUG','SEVERE'],a:3,h:'The word means "extremely serious".',
-   e:'<strong>SEVERE</strong> for critical failures. INFO for normal, WARNING for potential issues.'},
-  {t:'java',q:'Which exception is thrown when dividing by zero?',
-   c:['NullPointerException','ArithmeticException','IOException','NumberFormatException'],a:1,h:'Arithmetic operation + error = ?',
-   e:'<code>ArithmeticException</code> is thrown for illegal arithmetic like division by zero.'},
-  {t:'java',q:'In the Message Passing pattern, the Sender creates a <code>Message</code> object and calls:',
-   c:['receiver.getMessage(msg)','receiver.receiveMessage(msg)','sender.send(msg)','msg.deliver()'],a:1,h:'The receiver receives the message.',
-   e:'<code>sender.sendMessage(msg, receiver)</code> internally calls <code>receiver.receiveMessage(msg)</code>.'},
+  // ANALYZE
+  {t:'analyze',q:'What does IPO stand for in problem analysis?',
+   c:['Input, Process, Output','Integer, Print, Operation','Index, Process, Output','Instruction, Parameter, Object'],a:0,
+   h:'Three columns of a problem analysis table.',
+   e:'<strong>Input, Process, Output</strong> — the three columns used to analyse any computational problem.'},
+  {t:'analyze',q:'In an IPO chart, the formula "length × width" for area calculation belongs to which column?',
+   c:['Input','Output','Process','Result'],a:2,
+   h:'Where the actual calculation/work happens.',
+   e:'<strong>Process</strong> column contains formulas and calculations performed on the inputs.'},
+  {t:'analyze',q:'Which column in an IPO chart contains the data received from the user?',
+   c:['Output','Process','Input','Constants'],a:2,
+   h:'What the user types or provides.',
+   e:'<strong>Input</strong> lists all data received from the user or environment before processing.'},
+  {t:'analyze',q:'The result of a calculation that is shown to the user belongs in which IPO column?',
+   c:['Input','Process','Constants','Output'],a:3,
+   h:'What the program shows at the end.',
+   e:'<strong>Output</strong> contains results displayed or returned to the user.'},
+  {t:'analyze',q:'A program calculates the average of three numbers. Which of these is an INPUT?',
+   c:['The average value','The sum formula','The three numbers entered','The displayed result'],a:2,
+   h:'What data comes IN before processing?',
+   e:'The <strong>three numbers entered by the user</strong> are inputs. The average is the output.'},
+  {t:'analyze',q:'Analysing a problem means:',
+   c:['Writing the code directly','Clearly understanding and defining what the problem requires','Drawing a flowchart first','Choosing a programming language'],a:1,
+   h:'Understand WHAT before HOW.',
+   e:'Problem analysis means <strong>clearly defining</strong> inputs, outputs, and processing required — before writing any code.'},
+  {t:'analyze',q:'Which step comes FIRST when solving a problem with a computer?',
+   c:['Write the program','Test the program','Analyse the problem','Draw a flowchart'],a:2,
+   h:'Understand the problem before solving it.',
+   e:'<strong>Analyse the problem</strong> first — identify inputs, process, and expected outputs.'},
+  {t:'analyze',q:'A program calculates electricity bill. "Units consumed" is the input. What is the OUTPUT?',
+   c:['Units consumed','Cost per unit','Bill amount','Calculation formula'],a:2,
+   h:'What is shown to the user at the end?',
+   e:'The <strong>bill amount</strong> is the output — the result presented to the user after processing.'},
 
-  // ─── NETWORKING ───
-  {t:'networking',q:'The three pillars of any network protocol are:',
-   c:['Speed, Size, Security','Syntax, Semantics, Timing','Request, Response, Retry','Encode, Decode, Transmit'],a:1,h:'Think: structure, meaning, flow control.',
-   e:'<strong>Syntax</strong> (structure), <strong>Semantics</strong> (meaning), <strong>Timing</strong> (synchronization).'},
-  {t:'networking',q:'The OSI model has __ layers, TCP/IP has __ layers.',
-   c:['5, 4','7, 5','7, 4','6, 5'],a:1,h:'OSI is the theoretical one with more layers.',
-   e:'OSI has <strong>7</strong> layers (theoretical). TCP/IP has <strong>5</strong> (practical, powers the real internet).'},
-  {t:'networking',q:'For <code>192.168.10.0/29</code>, how many usable IPs?',
-   c:['8','6','14','30'],a:1,h:'Host bits = 32-29 = 3. Formula: 2^n - 2.',
-   e:'2^3 = 8 total. Minus network ID and broadcast = <strong>6</strong> usable.'},
-  {t:'networking',q:'ARP maps:',
-   c:['MAC → IP','IP → MAC','IP → DNS','DNS → IP'],a:1,h:'Address Resolution Protocol — resolves addresses you know to ones you need.',
-   e:'ARP maps a known <strong>IP</strong> to an unknown <strong>MAC</strong> address on the LAN.'},
-  {t:'networking',q:'PAT allows multiple hosts to share:',
-   c:['A single MAC','A single public IP','A single subnet','A single DNS'],a:1,h:'Most home routers do this — many devices, one external address.',
-   e:'PAT maps many internal hosts to one public IP using different <strong>port numbers</strong>.'},
-  {t:'networking',q:'The 5-tuple that identifies a TCP connection includes:',
-   c:['SrcIP, SrcPort, DstIP, DstPort, Protocol','SrcMAC, DstMAC, VLAN, IP, Port','IP, MAC, DNS, Port, TTL','Host, Port, Method, Path, Body'],a:0,h:'Two endpoints (IP+Port each) plus the protocol type.',
-   e:'Source IP, Source Port, Destination IP, Destination Port, Protocol (TCP/UDP).'},
-  {t:'networking',q:'ARP Poisoning creates what type of attack?',
-   c:['DDoS','Man-in-the-Middle (MITM)','SQL Injection','Buffer Overflow'],a:1,h:'The attacker sits between two communicating parties.',
-   e:'ARP has no authentication — an attacker sends fake ARP replies to intercept traffic (<strong>MITM</strong>).'},
+  // ALGO
+  {t:'algo',q:'Which property of an algorithm means it MUST eventually stop?',
+   c:['Definite','Effective','Finite','Unambiguous'],a:2,
+   h:'The algorithm has a clear end point.',
+   e:'<strong>Finite</strong> — every algorithm must terminate after a finite number of steps.'},
+  {t:'algo',q:'An algorithm step that is "clearly and exactly stated with no room for interpretation" is:',
+   c:['Finite','Unambiguous','Effective','Complete'],a:1,
+   h:'No confusion, no double meaning.',
+   e:'<strong>Unambiguous</strong> — each step must be clearly defined with exactly one interpretation.'},
+  {t:'algo',q:'The "Effective" property of an algorithm means:',
+   c:['It runs fast','Each step can be performed using basic operations','It has no bugs','It uses loops'],a:1,
+   h:'Each step must be doable in principle.',
+   e:'<strong>Effective</strong> — each step must be basic enough to be carried out in principle by a person.'},
+  {t:'algo',q:'How many control structures exist in programming?',
+   c:['2','4','3','5'],a:2,
+   h:'Sequence, Selection, Repetition.',
+   e:'There are <strong>3</strong> control structures: Sequence, Selection (decision), and Repetition (loop).'},
+  {t:'algo',q:'Executing statements one after another in order is called:',
+   c:['Selection','Repetition','Recursion','Sequence'],a:3,
+   h:'The simplest flow — top to bottom.',
+   e:'<strong>Sequence</strong> — statements execute in written order, one after another.'},
+  {t:'algo',q:'Which control structure allows the program to choose between alternative paths?',
+   c:['Sequence','Repetition','Selection','Iteration'],a:2,
+   h:'IF this THEN that.',
+   e:'<strong>Selection</strong> — allows the program to branch based on a condition being true or false.'},
+  {t:'algo',q:'Which control structure repeats a block of statements?',
+   c:['Sequence','Selection','Repetition','Assignment'],a:2,
+   h:'Loops!',
+   e:'<strong>Repetition</strong> (iteration/loop) — repeats a block of code while/until a condition holds.'},
+  {t:'algo',q:'An algorithm that outputs the largest of two numbers requires which control structure?',
+   c:['Sequence only','Repetition only','Selection','All three'],a:2,
+   h:'It has to compare two numbers and decide.',
+   e:'<strong>Selection</strong> — comparing two numbers requires an IF condition to branch on the result.'},
 
-  // ─── ARCHITECTURE ───
-  {t:'arch',q:'In 2-Tier architecture, the main security risk is:',
-   c:['Server overload','SQL injection from client','Too many middleware layers','Network latency'],a:1,h:'No middleware means clients talk directly to the database.',
-   e:'Without middleware, a reverse-engineered client can run <strong>SQL injection</strong> against the DB.'},
-  {t:'arch',q:'The middleware layer does NOT:',
-   c:['Validate input','Enforce business rules','Render the UI','Shield the database'],a:2,h:'The Presentation tier handles what the user sees.',
-   e:'<strong>Presentation tier</strong> renders the UI. Middleware handles validation, logic, and DB translation.'},
-  {t:'arch',q:'Graceful degradation means:',
-   c:['System reboots on failure','Other services keep working when one crashes','All services share a DB','Services communicate via SOAP'],a:1,h:'Think microservices: if Billing dies, Tracking still works.',
-   e:'Each microservice is independent. If Billing crashes, Tracking shows "billing temporarily unavailable".'},
-  {t:'arch',q:'<code>synchronized(lock)</code> creates a:',
-   c:['Daemon thread','Thread pool','Critical section','Deadlock'],a:2,h:'Only one thread enters at a time.',
-   e:'<code>synchronized</code> creates a <strong>critical section</strong> — only one thread can enter a block on the same lock.'},
-  {t:'arch',q:'<code>thread.join()</code> does what?',
-   c:['Kills the thread','Waits for the thread to finish','Runs in parallel','Skips the thread'],a:1,h:'join = wait to join back.',
-   e:'<code>join()</code> blocks the calling thread until the target completes.'},
+  // FLOWCHART
+  {t:'flowchart',q:'Which shape is used for a DECISION (condition) in a flowchart?',
+   c:['Rectangle','Oval','Diamond','Parallelogram'],a:2,
+   h:'It has sharp corners and two exit paths (YES/NO).',
+   e:'A <strong>diamond</strong> (rhombus) represents a decision with YES and NO exit paths.'},
+  {t:'flowchart',q:'Which flowchart shape represents a PROCESS (calculation or assignment)?',
+   c:['Diamond','Oval','Parallelogram','Rectangle'],a:3,
+   h:'A simple box for a simple action.',
+   e:'A <strong>rectangle</strong> represents processing steps like calculations and assignments.'},
+  {t:'flowchart',q:'Which shape represents START or END in a flowchart?',
+   c:['Rectangle','Diamond','Parallelogram','Oval / rounded rectangle'],a:3,
+   h:'Rounded ends, used at the very beginning and very end.',
+   e:'An <strong>oval</strong> (rounded rectangle / terminal) represents Start and End of a flowchart.'},
+  {t:'flowchart',q:'Which shape represents INPUT or OUTPUT in a flowchart?',
+   c:['Rectangle','Diamond','Parallelogram','Circle'],a:2,
+   h:'It is slanted — like data flowing in or out.',
+   e:'A <strong>parallelogram</strong> represents input/output (reading data or displaying results).'},
+  {t:'flowchart',q:'Arrows in a flowchart show:',
+   c:['Variable types','The flow of execution','Memory allocation','Data types'],a:1,
+   h:'They point to the next step.',
+   e:'<strong>Arrows (flow lines)</strong> show the sequence and direction of execution between steps.'},
+  {t:'flowchart',q:'Pseudocode is best described as:',
+   c:['A programming language','An informal, English-like description of an algorithm','Machine code','A type of flowchart'],a:1,
+   h:'It uses plain language, not strict syntax.',
+   e:'<strong>Pseudocode</strong> is an informal, human-readable algorithm description — not actual code.'},
+  {t:'flowchart',q:'A YES/NO split in a flowchart comes from which shape?',
+   c:['Rectangle','Oval','Parallelogram','Diamond'],a:3,
+   h:'Two exits — one for true, one for false.',
+   e:'A <strong>diamond</strong> (decision box) has two exits labelled YES and NO.'},
+  {t:'flowchart',q:'What does a small circle (connector) symbol in a flowchart indicate?',
+   c:['A loop','A function call','Continuation from another part of the chart','An error'],a:2,
+   h:'Used when the chart continues on another page or from a jump.',
+   e:'A <strong>connector</strong> (small circle) links disconnected parts of a flowchart, typically for page breaks.'},
 
-  // ─── SOCKET STRING ───
-  {t:'socket-string',q:'Which class listens for connections on the server?',
-   c:['Socket','ServerSocket','ClientSocket','NetSocket'],a:1,h:'The server-side socket.',
-   e:'<strong>ServerSocket</strong> listens/accepts. <strong>Socket</strong> is for the actual conversation.'},
-  {t:'socket-string',q:'<code>accept()</code> on ServerSocket is:',
-   c:['Non-blocking','Asynchronous','Blocking','Recursive'],a:2,h:'The program stops and waits.',
-   e:'<code>accept()</code> <strong>blocks</strong> — execution halts until a client connects.'},
-  {t:'socket-string',q:'Correct stream wrapping order for reading text:',
-   c:['BufferedReader → InputStreamReader → InputStream','InputStream → BufferedReader → InputStreamReader','InputStream → InputStreamReader → BufferedReader','PrintWriter → OutputStream → Socket'],a:2,h:'Raw bytes → characters → lines. Innermost to outermost.',
-   e:'<code>InputStream</code> (bytes) → <code>InputStreamReader</code> (chars) → <code>BufferedReader</code> (lines).'},
-  {t:'socket-string',q:'<code>new PrintWriter(stream, true)</code> — what does <code>true</code> do?',
-   c:['Encryption','Auto-flush','Compression','Buffering'],a:1,h:'Without it, data never reaches the client.',
-   e:'<strong>Auto-flush</strong> sends data immediately after <code>println()</code>.'},
-  {t:'socket-string',q:'System ports are in range:',
-   c:['0-65535','1024-49151','0-1023','49152-65535'],a:2,h:'HTTP=80, HTTPS=443, SSH=22 — these are all low numbers.',
-   e:'Ports 0-1023 are <strong>reserved</strong> system ports. Applications use 1024-65535.'},
+  // IDENTIFIERS
+  {t:'identifiers',q:'Which of these is a VALID Pascal identifier?',
+   c:['2ndValue','my variable','_total','studentName'],a:3,
+   h:'Must start with a letter, no spaces allowed.',
+   e:'<strong>studentName</strong> is valid — starts with a letter, contains only letters/digits. No spaces or leading digits.'},
+  {t:'identifiers',q:'Pascal identifiers CANNOT start with:',
+   c:['A letter','An underscore','A digit','A capital letter'],a:2,
+   h:'What character is always invalid at the start?',
+   e:'Pascal identifiers must start with a <strong>letter</strong>. Starting with a digit is not allowed.'},
+  {t:'identifiers',q:'Which of these is NOT a valid Pascal identifier?',
+   c:['total','FindGrade','x','my-value'],a:3,
+   h:'Hyphens are not allowed in identifiers.',
+   e:'<strong>my-value</strong> is invalid — the hyphen (-) is not permitted. Use underscores or camelCase instead.'},
+  {t:'identifiers',q:'Pascal reserved words are:',
+   c:['User-defined names','Words with special meaning that cannot be used as identifiers','Optional keywords','Only used in loops'],a:1,
+   h:'They are built into the Pascal language.',
+   e:'<strong>Reserved words</strong> like BEGIN, END, IF, FOR have special meanings and cannot be used as variable names.'},
+  {t:'identifiers',q:'Pascal identifiers are:',
+   c:['Case-sensitive (myVar ≠ MYVAR)','Case-insensitive (myVar = MYVAR)','Only uppercase','Only lowercase'],a:1,
+   h:'TYPE and type mean the same thing in Pascal.',
+   e:'Pascal is <strong>case-insensitive</strong> — <code>BEGIN</code>, <code>begin</code>, and <code>Begin</code> are all identical.'},
+  {t:'identifiers',q:'Which of these is a Pascal reserved word?',
+   c:['total','studentName','BEGIN','myValue'],a:2,
+   h:'It marks the start of a Pascal statement block.',
+   e:'<code>BEGIN</code> is a <strong>reserved word</strong> in Pascal — it opens a statement block.'},
+  {t:'identifiers',q:'Identifiers in Pascal are used for naming:',
+   c:['Only variables','Only procedure names','Variables, constants, procedures, and functions','Only program names'],a:2,
+   h:'Everything you name uses identifiers.',
+   e:'<strong>Identifiers</strong> are programmer-chosen names for variables, constants, procedures, functions, and programs.'},
+  {t:'identifiers',q:'Which Pascal identifier is valid?',
+   c:['end','123abc','find grade','FindGrade'],a:3,
+   h:'No spaces, no leading digits, not a keyword.',
+   e:'<strong>FindGrade</strong> is valid. "end" is reserved; "123abc" starts with a digit; "find grade" has a space.'},
 
-  // ─── SOCKET BYTE ───
-  {t:'socket-byte',q:'Why use <code>new String(buffer, 0, bytesRead)</code>?',
-   c:['Faster','Prevents garbage characters','Uses less memory','Adds encryption'],a:1,h:'Buffer is 1024 bytes but message might be 5 bytes.',
-   e:'Without specifying range, you get leftover bytes from previous reads as garbage characters.'},
-  {t:'socket-byte',q:'<code>inputStream.read(buffer)</code> returns -1 when:',
-   c:['Buffer full','Message empty','Client disconnected','Timeout'],a:2,h:'End-of-stream = no more data from the other side.',
-   e:'-1 = end-of-stream, meaning the client has <strong>disconnected</strong>.'},
-  {t:'socket-byte',q:'Byte streams can handle:',
-   c:['Text only','Any data (images, binary)','JSON only','XML only'],a:1,h:'Byte = any binary data, not just text.',
-   e:'Unlike BufferedReader/PrintWriter (text only), byte streams handle any data type.'},
+  // DATATYPES
+  {t:'datatypes',q:'Which Pascal data type stores whole numbers (no decimal)?',
+   c:['Real','Boolean','Integer','Char'],a:2,
+   h:'Think: 1, 2, 3, −5, 100',
+   e:'<strong>Integer</strong> stores whole numbers like −32768 to 32767 (standard Pascal).'},
+  {t:'datatypes',q:'Which Pascal data type stores decimal/floating-point numbers?',
+   c:['Integer','Char','Boolean','Real'],a:3,
+   h:'Think: 3.14, 2.5, −0.001',
+   e:'<strong>Real</strong> stores decimal numbers like 3.14, 99.9, −0.5.'},
+  {t:'datatypes',q:'Which Pascal data type stores TRUE or FALSE only?',
+   c:['Integer','String','Boolean','Char'],a:2,
+   h:'Only two possible values.',
+   e:'<strong>Boolean</strong> stores only TRUE or FALSE — used in conditions and logical expressions.'},
+  {t:'datatypes',q:'Which Pascal data type stores a SINGLE character?',
+   c:['String','Integer','Boolean','Char'],a:3,
+   h:'One letter, one digit, one symbol.',
+   e:"<strong>Char</strong> stores a single character like 'A', '5', or '@'."},
+  {t:'datatypes',q:'Which Pascal data type stores text (multiple characters)?',
+   c:['Char','Integer','String','Boolean'],a:2,
+   h:'A sequence of characters.',
+   e:"<strong>String</strong> stores sequences of characters like 'Hello' or a student name."},
+  {t:'datatypes',q:"To store a student's age (18, 21 etc.), which data type is most appropriate?",
+   c:['Real','String','Boolean','Integer'],a:3,
+   h:'Age is a whole number.',
+   e:'<strong>Integer</strong> — ages are whole numbers with no decimal part.'},
+  {t:'datatypes',q:'To store a student\'s GPA (3.75), which data type is most appropriate?',
+   c:['Integer','Boolean','Char','Real'],a:3,
+   h:'Has a decimal point.',
+   e:'<strong>Real</strong> — GPA has decimal places, so Integer is not sufficient.'},
+  {t:'datatypes',q:'A Char variable can hold:',
+   c:['Multiple characters','Exactly one character','A number only','TRUE or FALSE'],a:1,
+   h:'One and only one character.',
+   e:'<strong>Char</strong> holds exactly one character. For multiple characters, use String.'},
+  {t:'datatypes',q:'In Pascal, the declaration <code>var x : Integer;</code> means:',
+   c:['x can store any value','x stores whole numbers','x stores text','x stores TRUE/FALSE'],a:1,
+   h:'Integer = whole numbers.',
+   e:'<code>var x : Integer;</code> declares x as an <strong>Integer</strong> variable for whole numbers.'},
 
-  // ─── THREADING ───
-  {t:'threading',q:'In thread-per-connection, the main thread only handles:',
-   c:['Client communication','accept() calls','Database queries','Logging'],a:1,h:'Main thread is the "receptionist" — accepts, delegates, loops.',
-   e:'Main thread calls <code>accept()</code>, creates handler+thread, starts it, loops back.'},
-  {t:'threading',q:'Why is unbounded thread creation dangerous?',
-   c:['Threads are slow','~1MB stack per thread; 10K clients = 10GB RAM','Threads can\'t access sockets','Java limits to 10'],a:1,h:'Think about memory: 1MB * thousands of threads.',
-   e:'Use <code>ExecutorService</code> with a fixed thread pool for bounded concurrency.'},
-  {t:'threading',q:'TCP 3-way handshake order:',
-   c:['ACK, SYN, SYN-ACK','SYN, SYN-ACK, ACK','SYN, ACK, SYN-ACK','SYN-ACK, SYN, ACK'],a:1,h:'Client initiates with SYN, server responds, client confirms.',
-   e:'<strong>SYN → SYN-ACK → ACK</strong>. Both enter ESTABLISHED after step 3.'},
-  {t:'threading',q:'UDP is used for:',
-   c:['Email','Video streaming and gaming','File transfer','Database queries'],a:1,h:'Speed over reliability. Lost frames are acceptable.',
-   e:'<strong>UDP</strong>: fire-and-forget. No handshake, no guaranteed delivery. Ideal for real-time.'},
-  {t:'threading',q:'<code>SO_TIMEOUT</code> does what?',
-   c:['Sets connection timeout','Throws exception after N ms of silence on read()','Limits bandwidth','Enables keepalive'],a:1,h:'So the thread isn\'t stuck forever waiting for data.',
-   e:'<code>setSoTimeout(5000)</code> throws <code>InterruptedIOException</code> after 5 seconds.'},
-  {t:'threading',q:'<code>TCP_NODELAY</code> disables:',
-   c:['Encryption','Nagle\'s algorithm (small packet buffering)','Keepalive','Port reuse'],a:1,h:'Important for gaming, stock trading — no delay on small packets.',
-   e:'Nagle\'s algorithm buffers small packets. Disabling it sends data immediately.'},
+  // OPERATORS
+  {t:'operators',q:'What is the Pascal assignment operator?',
+   c:['=','==',':=','<-'],a:2,
+   h:'Two characters: colon then equals.',
+   e:'<strong>:=</strong> is the Pascal assignment operator. The = sign is used only for comparison.'},
+  {t:'operators',q:'Which operator gives the INTEGER quotient (no remainder) in Pascal?',
+   c:['mod','div','/','\\'],a:1,
+   h:'17 div 5 = 3 (the whole part only).',
+   e:'<strong>div</strong> performs integer division: 17 div 5 = 3 (remainder is discarded).'},
+  {t:'operators',q:'Which operator gives the REMAINDER after integer division in Pascal?',
+   c:['div','%','mod','rem'],a:2,
+   h:'17 mod 5 = 2 (what is left over).',
+   e:'<strong>mod</strong> gives the remainder: 17 mod 5 = 2.'},
+  {t:'operators',q:'What is the result of <code>17 div 5</code> in Pascal?',
+   c:['3.4','2','3','5'],a:2,
+   h:'Integer division drops the decimal.',
+   e:'17 div 5 = <strong>3</strong> (17 ÷ 5 = 3 remainder 2; div discards the remainder).'},
+  {t:'operators',q:'What is the result of <code>17 mod 5</code> in Pascal?',
+   c:['3','2','1','0'],a:1,
+   h:'The leftover after dividing 17 by 5.',
+   e:'17 mod 5 = <strong>2</strong> (17 = 5×3 + 2; the remainder is 2).'},
+  {t:'operators',q:'Which of these is a RELATIONAL operator in Pascal?',
+   c:[':=','+','AND','>='],a:3,
+   h:'It compares two values.',
+   e:'<strong>>=</strong> (greater than or equal) is a relational operator — compares values and returns Boolean.'},
+  {t:'operators',q:'What does <code>&lt;&gt;</code> mean in Pascal?',
+   c:['Less than or equal','Greater than','Not equal to','Empty string'],a:2,
+   h:'The opposite of =.',
+   e:'<strong>&lt;&gt;</strong> means "not equal to" in Pascal — the inequality operator.'},
+  {t:'operators',q:'Which LOGICAL operator returns TRUE only when BOTH operands are TRUE?',
+   c:['OR','NOT','AND','XOR'],a:2,
+   h:'Both must be true.',
+   e:'<strong>AND</strong> — returns TRUE only when both left and right operands are TRUE.'},
+  {t:'operators',q:'Which LOGICAL operator returns TRUE when at least ONE operand is TRUE?',
+   c:['AND','NOT','XOR','OR'],a:3,
+   h:'Either one is enough.',
+   e:'<strong>OR</strong> — returns TRUE if at least one operand is TRUE.'},
+  {t:'operators',q:'What does <code>NOT TRUE</code> evaluate to in Pascal?',
+   c:['TRUE','1','0','FALSE'],a:3,
+   h:'NOT flips the Boolean value.',
+   e:'<strong>NOT</strong> negates a Boolean: NOT TRUE = FALSE, NOT FALSE = TRUE.'},
 
-  // ─── HTTP ───
-  {t:'http',q:'Factory method to create HttpServer:',
-   c:['new HttpServer(port)','HttpServer.create(new InetSocketAddress(port), 0)','HttpServer.bind(port)','HttpServer.listen(port)'],a:1,h:'It\'s a static factory, not a constructor.',
-   e:'<code>HttpServer.create()</code> is a static factory. Second param <code>0</code> = system default backlog.'},
-  {t:'http',q:'<code>createContext("/greet", new GreetHandler())</code> maps:',
-   c:['A DB table to a class','A URL path to a handler','A thread to a socket','A port to an IP'],a:1,h:'Context = path mapping to handle requests.',
-   e:'Maps URL path <code>/greet</code> to the GreetHandler that processes requests.'},
-  {t:'http',q:'<code>sendResponseHeaders(405, -1)</code> means:',
-   c:['405 OK + chunked','405 Method Not Allowed, no body','405 error + 1 byte','404 Not Found'],a:1,h:'405 = wrong method. -1 = no body to send.',
-   e:'405 = Method Not Allowed. <code>-1</code> = no response body.'},
-  {t:'http',q:'Why <code>AtomicInteger</code> over <code>int++</code>?',
-   c:['Faster','int++ is not thread-safe','Less memory','int++ doesn\'t work in Java'],a:1,h:'Two threads reading the same value → lost increment.',
-   e:'<code>int++</code> = read-increment-write (not atomic). <code>AtomicInteger</code> = single atomic operation.'},
-  {t:'http',q:'Correct handler operation order:',
-   c:['Write → Send headers → Set headers','Set headers → Send headers → Write → Close','Send → Set → Write','Close → Write → Send'],a:1,h:'You must declare headers before committing them.',
-   e:'Set response headers → sendResponseHeaders → write body → close stream.'},
-  {t:'http',q:'HTTP 201 means:',
-   c:['OK','Created','Not Found','Method Not Allowed'],a:1,h:'Used after a successful POST that makes something new.',
-   e:'<strong>201 Created</strong> — used after a POST creates a new resource.'},
-  {t:'http',q:'To read a POST body in an HttpHandler:',
-   c:['exchange.getBody()','exchange.getRequestBody().readAllBytes()','exchange.readPost()','exchange.getInputStream()'],a:1,h:'Request body → read all bytes from it.',
-   e:'<code>exchange.getRequestBody()</code> returns an InputStream, then <code>.readAllBytes()</code> reads it.'},
+  // SELECTION
+  {t:'selection',q:'Which Pascal keyword begins a selection statement?',
+   c:['CASE','SELECT','WHEN','IF'],a:3,
+   h:'The most basic decision keyword.',
+   e:'<strong>IF</strong> begins a selection statement: IF condition THEN ... ELSE ...'},
+  {t:'selection',q:'In Pascal, what is the correct IF statement syntax?',
+   c:['IF (condition) THEN:','IF condition THEN','if condition { }','IF condition DO'],a:1,
+   h:'No parentheses required in Pascal.',
+   e:'<strong>IF condition THEN</strong> — Pascal IF does not require parentheses around the condition.'},
+  {t:'selection',q:'Which Pascal construct is best when testing a variable against many specific values?',
+   c:['IF-THEN-ELSE chain','FOR loop','CASE statement','WHILE loop'],a:2,
+   h:'Like a switch statement.',
+   e:'<strong>CASE</strong> — when testing one variable against multiple specific values, CASE is cleaner than nested IF-ELSEIFs.'},
+  {t:'selection',q:'What keyword ENDS a CASE statement in Pascal?',
+   c:['END','ESAC','ENDCASE','STOP'],a:0,
+   h:'Pascal uses END for many blocks.',
+   e:'A CASE statement ends with <strong>END</strong>: <code>CASE ... END;</code>'},
+  {t:'selection',q:'If an IF condition is FALSE and there is no ELSE, what happens?',
+   c:['Error is shown','Program stops','The IF block is skipped','The condition is retested'],a:2,
+   h:'Program just moves on.',
+   e:'The <strong>IF block is skipped</strong> — execution continues after the statement with no effect.'},
+  {t:'selection',q:'In Pascal, CASE statement evaluates:',
+   c:['Any expression','Only Boolean expressions','A single ordinal variable/expression','String expressions only'],a:2,
+   h:'Usually an integer or character.',
+   e:'CASE evaluates a single <strong>ordinal expression</strong> (integer, char, Boolean) and matches it to labels.'},
+  {t:'selection',q:'The textbook program "GradeForMarks" uses which selection construct?',
+   c:['FOR loop','WHILE loop','IF-THEN-ELSE','CASE statement'],a:2,
+   h:'It checks mark ranges with conditions.',
+   e:'<strong>IF-THEN-ELSE</strong> — GradeForMarks checks ranges (marks >= 75, >= 65 etc.) which requires IF conditions.'},
+  {t:'selection',q:'What keyword provides the alternative path in an IF statement?',
+   c:['THEN','OTHERWISE','ELSE','OR'],a:2,
+   h:'It handles the false case.',
+   e:'<strong>ELSE</strong> provides the alternative block executed when the IF condition is FALSE.'},
 
-  // ─── REST ───
-  {t:'rest',q:'REST URL design uses:',
-   c:['Adjectives','Nouns','Numbers','Protocols'],a:1,h:'/shipments not /createNewShipment.',
-   e:'RESTful URLs use <strong>nouns</strong>. HTTP methods (GET/POST/PUT/DELETE) express the action.'},
-  {t:'rest',q:'SOAP payload format:',
-   c:['JSON','XML','YAML','Binary'],a:1,h:'Verbose, with envelope wrapping.',
-   e:'SOAP uses verbose XML. REST uses lightweight JSON.'},
-  {t:'rest',q:'If a resource doesn\'t exist, return:',
-   c:['200 OK','404 Not Found','500 Error','405 Method Not Allowed'],a:1,h:'The resource was "not found".',
-   e:'<code>404 Not Found</code> is the correct response.'},
-  {t:'rest',q:'In the MovieService, <code>GET /movies/1</code> does:',
-   c:['Creates movie 1','Fetches movie with id=1','Deletes movie 1','Updates movie 1'],a:1,h:'GET = read/fetch.',
-   e:'GET is for reading. <code>/movies/1</code> fetches the movie with id 1.'},
+  // REPETITION
+  {t:'repetition',q:'Which Pascal loop checks the condition BEFORE executing the body?',
+   c:['REPEAT-UNTIL','FOR-DOWNTO','WHILE-DO','FOR-TO'],a:2,
+   h:'If false from the start, body never runs.',
+   e:'<strong>WHILE-DO</strong> checks the condition before each iteration. If initially false, body executes zero times.'},
+  {t:'repetition',q:'Which Pascal loop checks the condition AFTER executing the body?',
+   c:['WHILE-DO','FOR-TO','IF-THEN','REPEAT-UNTIL'],a:3,
+   h:'Body always runs at least once.',
+   e:'<strong>REPEAT-UNTIL</strong> — body executes first, then condition is checked. Guarantees at least one execution.'},
+  {t:'repetition',q:'Which Pascal loop is best when you know exactly how many times to repeat?',
+   c:['WHILE-DO','REPEAT-UNTIL','FOR-TO','IF-THEN'],a:2,
+   h:'You know the count in advance.',
+   e:'<strong>FOR-TO</strong> (or FOR-DOWNTO) is used when the number of iterations is known beforehand.'},
+  {t:'repetition',q:'REPEAT-UNTIL continues looping until the condition is:',
+   c:['FALSE','TRUE','Zero','Greater than 0'],a:1,
+   h:'It stops when the exit condition becomes true.',
+   e:'<strong>REPEAT-UNTIL</strong> stops when the condition becomes <strong>TRUE</strong> (opposite of WHILE which loops while TRUE).'},
+  {t:'repetition',q:'WHILE-DO continues looping while the condition is:',
+   c:['FALSE','Zero','TRUE','Greater than 1'],a:2,
+   h:'Keeps going as long as it is true.',
+   e:'<strong>WHILE-DO</strong> continues as long as the condition is <strong>TRUE</strong>. Stops when it becomes FALSE.'},
+  {t:'repetition',q:'In <code>FOR i := 1 TO 10 DO</code>, how many times does the body execute?',
+   c:['9','11','10','100'],a:2,
+   h:'From 1 to 10 inclusive.',
+   e:'<strong>10 times</strong> — i goes from 1, 2, 3 … 10, executing the body each time.'},
+  {t:'repetition',q:'What does DOWNTO mean in a Pascal FOR loop?',
+   c:['Loop stops halfway','Counter increases','Counter decreases','Loop repeats twice'],a:2,
+   h:'Counting backwards.',
+   e:'<strong>DOWNTO</strong> decrements the counter: FOR i := 10 DOWNTO 1 counts from 10 down to 1.'},
+  {t:'repetition',q:'An infinite loop in WHILE-DO occurs when:',
+   c:['The body is empty','The condition never becomes FALSE','The variable is Integer','The loop has no BEGIN'],a:1,
+   h:'It just keeps going forever.',
+   e:'An <strong>infinite loop</strong> occurs when the WHILE condition never becomes FALSE — the loop never terminates.'},
+  {t:'repetition',q:'What keyword ends a REPEAT-UNTIL loop in Pascal?',
+   c:['END','BEGIN','UNTIL','DONE'],a:2,
+   h:'The condition comes right after this keyword.',
+   e:'<strong>UNTIL</strong> ends the loop body and provides the exit condition: REPEAT ... UNTIL condition;'},
+  {t:'repetition',q:'The textbook program "print10Nos" uses which loop to print numbers 1–10?',
+   c:['WHILE-DO','REPEAT-UNTIL','FOR-TO','IF-THEN'],a:2,
+   h:'Counting from 1 to 10 is a fixed-count task.',
+   e:'<strong>FOR-TO</strong> — printing numbers 1 to 10 is a classic fixed-count loop: FOR i := 1 TO 10 DO.'},
 
-  // ─── EXAM ───
-  {t:'exam',q:'Socket Server TODO 3 requires:',
-   c:['A for loop','A recursive call','while (true) {','A switch statement'],a:2,h:'Server must run forever.',
-   e:'<code>while (true)</code> — an infinite loop to continuously accept clients.'},
-  {t:'exam',q:'Socket Server TODO 7 creates:',
-   c:['Thread thread = new Thread(handler);','handler.start();','new Runnable(handler);','Thread.run(handler);'],a:0,h:'Create a Thread with a Runnable.',
-   e:'<code>new Thread(handler)</code> wraps the Runnable handler in a thread.'},
-  {t:'exam',q:'HTTP Server TODO 18 sets:',
-   c:['Request method','Content-Type header to application/json','Port number','Executor'],a:1,h:'Tells the client the response format is JSON.',
-   e:'<code>exchange.getResponseHeaders().set("Content-Type", "application/json")</code>'},
-  {t:'exam',q:'HTTP Server TODO 12 handles non-GET by sending:',
-   c:['200 OK','404 Not Found','405 with -1 (no body)','500 Error'],a:2,h:'Method Not Allowed, no body needed.',
-   e:'<code>sendResponseHeaders(405, -1)</code>.'},
-  {t:'exam',q:'Socket Server TODO 14: the <code>true</code> in PrintWriter enables:',
-   c:['Debug mode','Auto-flush','Logging','Thread safety'],a:1,h:'Data is sent immediately after println().',
-   e:'Auto-flush = immediate sending. Without it, data buffers and the client sees nothing.'},
-  {t:'exam',q:'HTTP Server TODO 8 uses <code>response.getBytes().length</code> instead of <code>response.length()</code> because:',
-   c:['It\'s faster','HTTP Content-Length is in bytes, not characters','It looks cleaner','response.length() doesn\'t exist'],a:1,h:'Non-ASCII characters are multi-byte.',
-   e:'<code>.length()</code> counts characters. <code>.getBytes().length</code> counts bytes — HTTP needs byte count.'},
+  // NESTED & ARRAYS
+  {t:'nested',q:'A loop placed inside another loop is called a:',
+   c:['Recursive loop','Parallel loop','Nested loop','Double loop'],a:2,
+   h:'One inside the other.',
+   e:'A <strong>nested loop</strong> — the inner loop completes all its iterations for each single iteration of the outer loop.'},
+  {t:'nested',q:'In Pascal, an array is declared using which keyword?',
+   c:['LIST','ARRAY','TABLE','SET'],a:1,
+   h:'The keyword says exactly what it is.',
+   e:'<code>var marks : <strong>array</strong>[1..10] of Integer;</code> — the ARRAY keyword is required.'},
+  {t:'nested',q:'What does <code>array[0..9] of Integer</code> declare?',
+   c:['An array of 9 integers','An array of 10 strings','An array of 10 integers','A 2D array'],a:2,
+   h:'Indices 0 to 9 inclusive.',
+   e:'<strong>10 integers</strong> — indices 0, 1, 2 … 9 give 10 elements.'},
+  {t:'nested',q:'To access the 3rd element of array "marks" (indexed from 1), you write:',
+   c:['marks.3','marks[2]','marks(3)','marks[3]'],a:3,
+   h:'Pascal arrays use square brackets.',
+   e:'<strong>marks[3]</strong> — Pascal uses square bracket notation for array element access.'},
+  {t:'nested',q:'A 2D array in Pascal is also called a:',
+   c:['List','Stack','Matrix','Queue'],a:2,
+   h:'Rows and columns.',
+   e:'A <strong>matrix</strong> — a 2D array has rows and columns like a table.'},
+  {t:'nested',q:'In a nested IF, the inner IF executes only when:',
+   c:['Always','The outer condition is FALSE','The outer condition is TRUE','The program starts'],a:2,
+   h:'Must pass the outer gate first.',
+   e:'The inner IF executes only when the <strong>outer condition is TRUE</strong> — control must reach the inner block.'},
+  {t:'nested',q:'For a nested loop with outer 3 iterations and inner 4 iterations, the inner body executes:',
+   c:['4 times','3 times','7 times','12 times'],a:3,
+   h:'3 × 4 = ?',
+   e:'<strong>12 times</strong> — 4 inner iterations × 3 outer iterations = 12 total executions of the inner body.'},
+  {t:'nested',q:'Which Pascal statements can be nested inside each other?',
+   c:['Only IF','Only FOR','Only WHILE','All control structures can be nested'],a:3,
+   h:'Any block can go inside any block.',
+   e:'<strong>All control structures</strong> (IF, FOR, WHILE, REPEAT) can be nested inside each other.'},
+
+  // SUB-PROGRAMS
+  {t:'subprog',q:'A sub-program that RETURNS a value is called a:',
+   c:['Procedure','Module','Function','Sub-routine'],a:2,
+   h:'It computes and gives back a result.',
+   e:'A <strong>function</strong> performs a calculation and returns a single value to the caller.'},
+  {t:'subprog',q:'A sub-program that does NOT return a value is called a:',
+   c:['Function','Method','Procedure','Module'],a:2,
+   h:'It performs actions but returns nothing.',
+   e:'A <strong>procedure</strong> performs actions (like printing) but does not return a value.'},
+  {t:'subprog',q:'Which keyword begins a procedure definition in Pascal?',
+   c:['FUNCTION','DEFINE','SUB','PROCEDURE'],a:3,
+   h:'Same as the English word.',
+   e:'<strong>PROCEDURE</strong> begins a procedure: <code>PROCEDURE procedureName;</code>'},
+  {t:'subprog',q:'Which keyword begins a function definition in Pascal?',
+   c:['PROC','FUNCTION','RETURN','METHOD'],a:1,
+   h:'Same as the English word.',
+   e:'<strong>FUNCTION</strong> begins a function: <code>FUNCTION funcName : ReturnType;</code>'},
+  {t:'subprog',q:'Parameters in a sub-program allow:',
+   c:['Only fixed values to be used','Different input values to be passed each call','The function to run automatically','Multiple return values'],a:1,
+   h:'You can reuse the same sub-program with different data.',
+   e:'<strong>Parameters</strong> allow different values to be passed on each call, making sub-programs reusable.'},
+  {t:'subprog',q:'In Pascal, what comes after the function name to specify its return type?',
+   c:['RETURNS','=','->',':'],a:3,
+   h:'Same separator as variable declarations.',
+   e:'A <strong>colon</strong> separates the function name from its return type: <code>FUNCTION f : Integer;</code>'},
+
+  // EXAM PRACTICE
+  {t:'exam',q:'Which Pascal statement correctly assigns 5 to variable N?',
+   c:['N = 5','N := 5','SET N = 5','LET N = 5'],a:1,
+   h:'Pascal uses := for assignment.',
+   e:'<strong>N := 5</strong> — Pascal uses := for assignment. The = sign is used only for comparison.'},
+  {t:'exam',q:'What is the output of: <code>Writeln(17 mod 5);</code>?',
+   c:['3','3.4','2','5'],a:2,
+   h:'Remainder of 17 ÷ 5.',
+   e:'17 mod 5 = <strong>2</strong> (17 = 5×3 + 2). mod gives the remainder.'},
+  {t:'exam',q:'In Pascal, the REPEAT-UNTIL loop differs from WHILE-DO because:',
+   c:['REPEAT uses integers only','REPEAT always runs at least once','WHILE is faster','WHILE uses more memory'],a:1,
+   h:'The body executes before the condition is checked.',
+   e:'<strong>REPEAT-UNTIL always executes at least once</strong> — condition is checked after the body runs.'},
+  {t:'exam',q:'Which Pascal declaration is correct for a function returning an Integer?',
+   c:['FUNCTION myFunc : Integer;','FUNCTION myFunc = Integer;','INTEGER FUNCTION myFunc;','PROCEDURE myFunc : Integer;'],a:0,
+   h:'Return type comes after the colon.',
+   e:'<strong>FUNCTION myFunc : Integer;</strong> — the return type follows a colon after the function name.'},
+  {t:'exam',q:'What does <code>div</code> do that <code>/</code> does NOT in Pascal?',
+   c:['Divides larger numbers','Returns only the integer quotient','Works with Real numbers','Handles division by zero'],a:1,
+   h:'div drops the decimal part.',
+   e:'<strong>div</strong> returns only the integer quotient. <code>/</code> returns a Real result with decimals.'},
+  {t:'exam',q:'A Pascal constant is declared with which syntax?',
+   c:['var PI := 3.14;','const PI := 3.14;','const PI = 3.14;','constant PI = 3.14;'],a:2,
+   h:'Constants use = not :=, and no type needed.',
+   e:'<strong>const PI = 3.14;</strong> — constants use = (not :=) and need no type declaration.'},
 ];
 
+// ── CODE COMPLETION ──
 const CODE=[
-  {t:'exam',cat:'Socket Server',n:1,ctx:'<span class="cm">// TODO 1: Define a port number</span>',
-   ans:'int port = 6666;',acc:['int port = 6666;','int port=6666;','int port = 6666','final int port = 6666;'],
-   h:'Declare an int variable, assign a port above 1023.',e:'Port 6666 is above reserved range (0-1023).'},
-  {t:'exam',cat:'Socket Server',n:2,ctx:'<span class="cm">// TODO 2: Initialize ServerSocket</span>',
-   ans:'ServerSocket serverSocket = new ServerSocket(port);',acc:['ServerSocket serverSocket = new ServerSocket(port);','ServerSocket serverSocket=new ServerSocket(port);'],
-   h:'Create a new ServerSocket passing the port variable.',e:'Binds to the port and starts listening for connections.'},
-  {t:'exam',cat:'Socket Server',n:3,ctx:'<span class="cm">// TODO 3: Infinite loop for accepting clients</span>',
-   ans:'while (true) {',acc:['while (true) {','while(true){','while (true){','while(true) {'],
-   h:'A loop that never ends. Condition is always true.',e:'Server must continuously accept new clients.'},
-  {t:'exam',cat:'Socket Server',n:4,ctx:'<span class="cm">// TODO 4: Accept client connection</span>',
-   ans:'Socket clientSocket = serverSocket.accept();',acc:['Socket clientSocket = serverSocket.accept();','Socket clientSocket=serverSocket.accept();'],
-   h:'Call accept() on the server socket. Returns a Socket.',e:'<code>accept()</code> blocks until a client connects, returns a Socket.'},
-  {t:'exam',cat:'Socket Server',n:6,ctx:'<span class="cm">// TODO 6: Create ClientHandler instance</span>',
-   ans:'ClientHandler handler = new ClientHandler(clientSocket);',acc:['ClientHandler handler = new ClientHandler(clientSocket);','ClientHandler handler=new ClientHandler(clientSocket);'],
-   h:'Pass the client socket to the handler constructor.',e:'Creates a Runnable handler for this specific client.'},
-  {t:'exam',cat:'Socket Server',n:7,ctx:'<span class="cm">// TODO 7: Create Thread with handler</span>',
-   ans:'Thread thread = new Thread(handler);',acc:['Thread thread = new Thread(handler);','Thread thread=new Thread(handler);'],
-   h:'Wrap the Runnable handler in a Thread.',e:'The Thread will execute the handler\'s <code>run()</code> method.'},
-  {t:'exam',cat:'Socket Server',n:8,ctx:'<span class="cm">// TODO 8: Start the thread</span>',
-   ans:'thread.start();',acc:['thread.start();','thread.start()'],
-   h:'NOT .run() — that runs on the current thread!',e:'<code>.start()</code> creates a new OS thread. <code>.run()</code> stays on current thread.'},
-  {t:'exam',cat:'Socket Server',n:12,ctx:'<span class="cm">// TODO 12: Wrap in BufferedReader</span>\n<span class="cm">// inputStreamReader already exists</span>',
-   ans:'in = new BufferedReader(inputStreamReader);',acc:['in = new BufferedReader(inputStreamReader);','in=new BufferedReader(inputStreamReader);'],
-   h:'Assign to the variable "in" declared earlier.',e:'Completes the chain: InputStream → InputStreamReader → BufferedReader.'},
-  {t:'exam',cat:'Socket Server',n:14,ctx:'<span class="cm">// TODO 14: Wrap in PrintWriter with auto-flush</span>\n<span class="cm">// outputStream already exists</span>',
-   ans:'out = new PrintWriter(outputStream, true);',acc:['out = new PrintWriter(outputStream, true);','out=new PrintWriter(outputStream, true);','out = new PrintWriter(outputStream,true);'],
-   h:'The second parameter MUST be true for auto-flush.',e:'<code>true</code> enables auto-flush — critical for sending data immediately.'},
-  {t:'exam',cat:'Socket Server',n:15,ctx:'<span class="ty">String</span> inputLine;\n<span class="cm">// TODO 15: Read loop until disconnect</span>',
-   ans:'while ((inputLine = in.readLine()) != null) {',acc:['while ((inputLine = in.readLine()) != null) {','while((inputLine = in.readLine()) != null){','while ((inputLine=in.readLine())!=null) {'],
-   h:'Read + assign + null-check in one line. Parens around assignment!',e:'Reads a line, assigns to inputLine, checks for null (disconnect).'},
-  {t:'exam',cat:'Socket Server',n:17,ctx:'<span class="cm">// TODO 17: Echo back to client</span>',
-   ans:'out.println("Echo: " + inputLine);',acc:['out.println("Echo: " + inputLine);','out.println("Echo: "+inputLine);'],
-   h:'Use println on the output writer. Prepend "Echo: ".',e:'Sends "Echo: " + original message. Auto-flush ensures immediate delivery.'},
-  {t:'exam',cat:'Socket Server',n:18,ctx:'<span class="cm">// TODO 18: Close client socket (in finally)</span>',
-   ans:'clientSocket.close();',acc:['clientSocket.close();','clientSocket.close()'],
-   h:'Close the CLIENT socket, not the server socket!',e:'Releases resources for this client. Closing serverSocket would stop accepting new clients.'},
-  {t:'exam',cat:'HTTP Server',n:1,ctx:'<span class="cm">// TODO 1: Create HttpServer on port 8000</span>',
-   ans:'HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);',
-   acc:['HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);','HttpServer server=HttpServer.create(new InetSocketAddress(8000),0);'],
-   h:'Factory method, not constructor. InetSocketAddress wraps the port.',e:'<code>HttpServer.create()</code> — static factory. Second param 0 = system default backlog.'},
-  {t:'exam',cat:'HTTP Server',n:2,ctx:'<span class="cm">// TODO 2: Register "/" path</span>',
-   ans:'server.createContext("/", new RootHandler());',acc:['server.createContext("/", new RootHandler());','server.createContext("/",new RootHandler());'],
-   h:'createContext maps a path to a handler class.',e:'Maps root URL <code>/</code> to RootHandler.'},
-  {t:'exam',cat:'HTTP Server',n:4,ctx:'<span class="cm">// TODO 4: Set executor</span>',
-   ans:'server.setExecutor(null);',acc:['server.setExecutor(null);'],
-   h:'null = default single-threaded executor.',e:'<code>null</code> uses the default executor. For multi-threading, use a thread pool.'},
-  {t:'exam',cat:'HTTP Server',n:5,ctx:'<span class="cm">// TODO 5: Start the server</span>',
-   ans:'server.start();',acc:['server.start();','server.start()'],
-   h:'One method call to begin processing requests.',e:'After this call, the server is live on port 8000.'},
-  {t:'exam',cat:'HTTP Server',n:8,ctx:'<span class="ty">String</span> response = <span class="st">"&lt;html&gt;...&lt;/html&gt;"</span>;\n<span class="cm">// TODO 8: Send 200 OK</span>',
-   ans:'exchange.sendResponseHeaders(200, response.getBytes().length);',
-   acc:['exchange.sendResponseHeaders(200, response.getBytes().length);','exchange.sendResponseHeaders(200,response.getBytes().length);'],
-   h:'Use getBytes().length, NOT length(). HTTP needs byte count.',e:'200=OK. Byte length, not char length — they differ for non-ASCII.'},
-  {t:'exam',cat:'HTTP Server',n:18,ctx:'<span class="cm">// TODO 18: Set Content-Type to JSON</span>',
-   ans:'exchange.getResponseHeaders().set("Content-Type", "application/json");',
-   acc:['exchange.getResponseHeaders().set("Content-Type", "application/json");','exchange.getResponseHeaders().set("Content-Type","application/json");'],
-   h:'Chain: getResponseHeaders() then .set(key, value).',e:'Must be done BEFORE sendResponseHeaders().'},
+  {t:'selection',cat:'positiveNo',n:1,
+   ctx:`<span class="kw">program</span> positiveNo;\n<span class="kw">var</span> N : <span class="ty">Integer</span>;\n<span class="kw">begin</span>\n  <span class="fn">Read</span>(N);\n  <span class="cm">{ Write the IF condition for positive number }</span>\n    <span class="fn">Writeln</span>(<span class="st">'Positive Number'</span>);`,
+   ans:'If N > 0 then',
+   acc:['if n > 0 then','if n>0 then'],
+   h:'A positive number is greater than zero.',
+   e:'<strong>If N &gt; 0 then</strong> — checks if N is positive before printing the message.'},
+
+  {t:'selection',cat:'positiveNo',n:2,
+   ctx:`  <span class="kw">If</span> N > 0 <span class="kw">then</span>\n    <span class="fn">Writeln</span>(<span class="st">'Positive Number'</span>)\n  <span class="kw">else</span>\n    <span class="cm">{ Print message for non-positive numbers }</span>`,
+   ans:"Writeln('Not a Positive Number');",
+   acc:["writeln('not a positive number');","writeln('not a positive number')"],
+   h:'The ELSE branch handles zero and negative numbers.',
+   e:"<strong>Writeln('Not a Positive Number');</strong> — the else branch covers zero and negatives."},
+
+  {t:'selection',cat:'LargeNo',n:3,
+   ctx:`<span class="kw">program</span> LargeNo;\n<span class="kw">var</span> A, B : <span class="ty">Integer</span>;\n<span class="kw">begin</span>\n  <span class="fn">Read</span>(A, B);\n  <span class="cm">{ IF condition to check if A is larger }</span>\n    <span class="fn">Writeln</span>(A)\n  <span class="kw">else</span>\n    <span class="fn">Writeln</span>(B);`,
+   ans:'If A > B then',
+   acc:['if a > b then','if a>b then'],
+   h:'Check which of A or B is larger.',
+   e:'<strong>If A &gt; B then</strong> — compares A and B; prints A if larger, else prints B.'},
+
+  {t:'selection',cat:'GradeForMarks',n:4,
+   ctx:`<span class="fn">Read</span>(marks);\n<span class="kw">If</span> marks >= 75 <span class="kw">then</span>\n  <span class="fn">Writeln</span>(<span class="st">'A'</span>)\n<span class="kw">else</span>\n  <span class="cm">{ Next condition: B grade (65 to 74) }</span>\n    <span class="fn">Writeln</span>(<span class="st">'B'</span>)`,
+   ans:'If marks >= 65 then',
+   acc:['if marks >= 65 then','if marks>=65 then'],
+   h:'B grade: 65 and above (but less than 75).',
+   e:'<strong>If marks &gt;= 65 then</strong> — nested ELSE-IF checks for B grade range.'},
+
+  {t:'repetition',cat:'print10Nos',n:5,
+   ctx:`<span class="kw">program</span> print10Nos;\n<span class="kw">var</span> i : <span class="ty">Integer</span>;\n<span class="kw">begin</span>\n  <span class="cm">{ FOR loop to print numbers 1 to 10 }</span>\n    <span class="fn">Writeln</span>(i);`,
+   ans:'For i := 1 to 10 do',
+   acc:['for i := 1 to 10 do','for i:=1 to 10 do'],
+   h:'Counting loop from 1 to 10.',
+   e:'<strong>For i := 1 to 10 do</strong> — FOR loop counting from 1 to 10, printing each value.'},
+
+  {t:'repetition',cat:'total_avg',n:6,
+   ctx:`  total := 0;\n  <span class="fn">Read</span>(n);\n  <span class="kw">For</span> i := 1 <span class="kw">to</span> n <span class="kw">do</span>\n  <span class="kw">begin</span>\n    <span class="fn">Read</span>(num);\n    <span class="cm">{ Accumulate num into total }</span>\n  <span class="kw">end</span>;`,
+   ans:'total := total + num;',
+   acc:['total:=total+num;','total := total + num'],
+   h:'Add num to the running total.',
+   e:'<strong>total := total + num;</strong> — accumulate each number into the running total variable.'},
+
+  {t:'repetition',cat:'total_avg',n:7,
+   ctx:`  <span class="kw">end</span>; <span class="cm">{ end of for loop }</span>\n  <span class="cm">{ Calculate average: divide total by n }</span>\n  <span class="fn">Writeln</span>(avg);`,
+   ans:'avg := total / n;',
+   acc:['avg:=total/n;','avg := total / n'],
+   h:'Divide total by count n to get the average.',
+   e:'<strong>avg := total / n;</strong> — divide accumulated total by count to get the average.'},
+
+  {t:'selection',cat:'FindGrade (CASE)',n:8,
+   ctx:`<span class="kw">case</span> grade <span class="kw">of</span>\n  <span class="st">'A'</span> : <span class="fn">Writeln</span>(<span class="st">'Excellent'</span>);\n  <span class="cm">{ Case label for B grade → print 'Good' }</span>\n  <span class="st">'C'</span> : <span class="fn">Writeln</span>(<span class="st">'Average'</span>);\n<span class="kw">end</span>;`,
+   ans:"'B' : Writeln('Good');",
+   acc:["'b' : writeln('good');","'b': writeln('good');"],
+   h:"Single-quoted character 'B' followed by a colon.",
+   e:"<strong>'B' : Writeln('Good');</strong> — CASE label uses the character value with a colon separator."},
+
+  {t:'repetition',cat:'WHILE example',n:9,
+   ctx:`<span class="kw">var</span> i : <span class="ty">Integer</span>;\n<span class="kw">begin</span>\n  i := 1;\n  <span class="cm">{ WHILE loop: continue while i is 5 or less }</span>\n  <span class="kw">begin</span>\n    <span class="fn">Writeln</span>(i);\n    i := i + 1;\n  <span class="kw">end</span>;`,
+   ans:'While i <= 5 do',
+   acc:['while i <= 5 do','while i<=5 do'],
+   h:'Condition: continue as long as i is not more than 5.',
+   e:'<strong>While i &lt;= 5 do</strong> — loop continues while i is less than or equal to 5.'},
+
+  {t:'repetition',cat:'REPEAT example',n:10,
+   ctx:`<span class="kw">var</span> num : <span class="ty">Integer</span>;\n<span class="kw">begin</span>\n  <span class="kw">repeat</span>\n    <span class="fn">Read</span>(num);\n  <span class="cm">{ Until condition: stop when a positive number is entered }</span>`,
+   ans:'until num > 0;',
+   acc:['until num>0;','until num > 0'],
+   h:'Exit the loop when a positive number is entered.',
+   e:'<strong>until num &gt; 0;</strong> — REPEAT-UNTIL exits when the condition becomes TRUE.'},
+
+  {t:'datatypes',cat:'var declarations',n:11,
+   ctx:`<span class="kw">program</span> myProg;\n<span class="cm">{ Declare: n and total as Integer, average as Real }</span>\n<span class="kw">begin</span>`,
+   ans:'var n, total : Integer; average : Real;',
+   acc:['var n,total:integer;average:real;','var n, total : integer; average : real;'],
+   h:'VAR keyword, then name : type; for each group.',
+   e:'<strong>var n, total : Integer; average : Real;</strong> — multiple same-type variables share one declaration.'},
+
+  {t:'subprog',cat:'procedure_circle',n:12,
+   ctx:`<span class="cm">{ Define a procedure named calcArea with parameter r of type Real }</span>\n<span class="kw">var</span> area : <span class="ty">Real</span>;\n<span class="kw">begin</span>\n  area := 3.14 * r * r;\n  <span class="fn">Writeln</span>(area);\n<span class="kw">end</span>;`,
+   ans:'procedure calcArea(r : Real);',
+   acc:['procedure calcarea(r : real);','procedure calcarea(r:real);'],
+   h:'PROCEDURE keyword, name, then parameters in parentheses.',
+   e:'<strong>procedure calcArea(r : Real);</strong> — defines a procedure with a Real parameter r.'},
+
+  {t:'subprog',cat:'function_circle',n:13,
+   ctx:`<span class="cm">{ Define a function named circleArea with parameter r : Real returning Real }</span>\n<span class="kw">begin</span>\n  circleArea := 3.14 * r * r;\n<span class="kw">end</span>;`,
+   ans:'function circleArea(r : Real) : Real;',
+   acc:['function circlearea(r : real) : real;','function circlearea(r:real):real;'],
+   h:'FUNCTION name(params) : ReturnType;',
+   e:'<strong>function circleArea(r : Real) : Real;</strong> — function with Real parameter and Real return type.'},
+
+  {t:'nested',cat:'array declaration',n:14,
+   ctx:`<span class="kw">var</span>\n  <span class="cm">{ Declare marks as array of 10 integers, indexed 1 to 10 }</span>`,
+   ans:'marks : array[1..10] of Integer;',
+   acc:['marks:array[1..10] of integer;','marks : array[1..10] of integer;'],
+   h:'array[start..end] of Type',
+   e:'<strong>marks : array[1..10] of Integer;</strong> — array indexed 1 to 10, each element an Integer.'},
+
+  {t:'identifiers',cat:'I/O basics',n:15,
+   ctx:`<span class="cm">{ Read a value into variable N from keyboard }</span>`,
+   ans:'Read(N);',
+   acc:['read(n);','read(n)'],
+   h:'Read is the Pascal input procedure.',
+   e:'<strong>Read(N);</strong> — reads a value from the keyboard and stores it in variable N.'},
+
+  {t:'identifiers',cat:'I/O basics',n:16,
+   ctx:`<span class="cm">{ Display the text Hello followed by a newline }</span>`,
+   ans:"Writeln('Hello');",
+   acc:["writeln('hello');","writeln('hello')"],
+   h:'Writeln outputs text and moves to the next line.',
+   e:"<strong>Writeln('Hello');</strong> — Writeln prints text followed by a newline character."},
+
+  {t:'identifiers',cat:'program structure',n:17,
+   ctx:`<span class="kw">program</span> myProg;\n<span class="kw">begin</span>\n  <span class="fn">Writeln</span>(<span class="st">'Hello'</span>);\n  <span class="cm">{ End the main program block }</span>`,
+   ans:'end.',
+   acc:['end.','end .'],
+   h:'The final end of a Pascal program uses a period, not a semicolon.',
+   e:'<strong>end.</strong> — the main program block ends with END followed by a period.'},
+
+  {t:'datatypes',cat:'constants',n:18,
+   ctx:`<span class="cm">{ Declare a constant named PI with value 3.14159 }</span>`,
+   ans:'const PI = 3.14159;',
+   acc:['const pi = 3.14159;','const pi=3.14159;'],
+   h:'CONST keyword, name = value; (no colon, no type needed).',
+   e:'<strong>const PI = 3.14159;</strong> — constants use = (not :=) and require no type declaration.'},
+
+  {t:'nested',cat:'nested loops',n:19,
+   ctx:`<span class="kw">for</span> i := 1 <span class="kw">to</span> 3 <span class="kw">do</span>\n<span class="kw">begin</span>\n  <span class="cm">{ Inner loop: j from 1 to 4 }</span>\n    <span class="fn">Writeln</span>(i, j);\n<span class="kw">end</span>;`,
+   ans:'for j := 1 to 4 do',
+   acc:['for j:=1 to 4 do','for j := 1 to 4 do'],
+   h:'Inner loop uses a different counter variable.',
+   e:'<strong>for j := 1 to 4 do</strong> — inner loop with separate counter j, runs 4 times per outer iteration.'},
+
+  {t:'datatypes',cat:'string I/O',n:20,
+   ctx:`<span class="kw">var</span> name : <span class="ty">String</span>;\n<span class="kw">begin</span>\n  <span class="fn">Read</span>(name);\n  <span class="cm">{ Print greeting: Hello, followed by the name variable }</span>`,
+   ans:"Writeln('Hello, ', name);",
+   acc:["writeln('hello, ', name);","writeln('hello, ',name);"],
+   h:"Writeln can take multiple arguments separated by commas.",
+   e:"<strong>Writeln('Hello, ', name);</strong> — Writeln accepts multiple comma-separated arguments."},
 ];
 
+// ── MATCH SETS ──
 const MATCH=[
-  {t:'networking',title:'Network Concepts',p:[['Protocol Syntax','Arrangement and order of bits'],['Protocol Semantics','What the bits represent'],['Protocol Timing','Speed matching and flow control'],['ARP','Maps IP to MAC address'],['NAT','Shares one public IP among hosts'],['CIDR /24','256 total, 254 usable hosts']]},
-  {t:'socket-string',title:'Stream Wrapping',p:[['InputStream','Raw bytes from socket'],['InputStreamReader','Bytes to characters'],['BufferedReader','Line-by-line via readLine()'],['OutputStream','Raw bytes to socket'],['PrintWriter(s, true)','Text output with auto-flush'],['ServerSocket','Listens for connections']]},
-  {t:'http',title:'HTTP Components',p:[['HttpServer','The server, bound to a port'],['HttpHandler','Interface: handle(HttpExchange)'],['HttpExchange','Request-response object'],['InetSocketAddress','Wraps IP + port'],['AtomicInteger','Thread-safe counter'],['createContext()','Maps path to handler']]},
-  {t:'threading',title:'Concurrency',p:[['synchronized(lock)','Critical section (1 thread)'],['thread.join()','Wait until thread finishes'],['thread.start()','New OS thread'],['thread.run()','Runs on CURRENT thread (wrong!)'],['ExecutorService','Fixed thread pool'],['SO_TIMEOUT','Exception after N ms silence']]},
-  {t:'rest',title:'REST & Web Services',p:[['SOAP','XML, formal WSDL contract'],['REST','JSON, HTTP methods natively'],['GET /shipments/99','Fetch specific shipment'],['POST /shipments','Create new shipment'],['PUT /shipments/99','Update existing shipment'],['404','Resource not found']]},
-  {t:'arch',title:'Architecture Tiers',p:[['1-Tier','All on one machine'],['2-Tier','Client directly to server/DB'],['3-Tier','Middleware between client and DB'],['N-Tier','Independent services, graceful degradation'],['Middleware','Validates input, enforces rules'],['Data Tier','Database, never exposed directly']]},
-  {t:'java',title:'Java Fundamentals',p:[['this','Current object instance'],['private','Access modifier for encapsulation'],['finally','Always runs, for cleanup'],['SEVERE','Critical failure log level'],['try-catch','Exception handling structure'],['toString()','String representation of object']]},
-  {t:'exam',title:'Exam Key Patterns',p:[['TODO 3 (Socket)','while (true) {'],['TODO 14 (Socket)','PrintWriter with true (auto-flush)'],['TODO 15 (Socket)','Read loop: readLine() != null'],['TODO 1 (HTTP)','HttpServer.create(InetSocketAddress, 0)'],['TODO 8 (HTTP)','sendResponseHeaders(200, bytes.length)'],['TODO 12 (HTTP)','405, -1 for non-GET']]},
+  {t:'analyze',title:'IPO Analysis',
+   p:[['Input','Data received from the user or environment'],
+      ['Process','Operations and calculations performed on the data'],
+      ['Output','Result displayed to the user'],
+      ['IPO Chart','Table used to analyse a problem before coding'],
+      ['Problem Analysis','Clearly defining what a problem requires'],
+      ['Variable','Named storage location that can hold input data']]},
+
+  {t:'algo',title:'Algorithm Properties',
+   p:[['Finite','The algorithm must eventually stop'],
+      ['Unambiguous','Each step has exactly one clear meaning'],
+      ['Effective','Each step can be carried out by basic operations'],
+      ['Sequence','Statements executed one after another in order'],
+      ['Selection','Choosing between paths based on a condition'],
+      ['Repetition','Repeating a block of statements']]},
+
+  {t:'flowchart',title:'Flowchart Symbols',
+   p:[['Diamond','Decision / condition symbol (YES/NO exits)'],
+      ['Rectangle','Process / action symbol (calculations)'],
+      ['Oval','Start or End terminal'],
+      ['Parallelogram','Input or Output operation'],
+      ['Arrow','Direction of execution flow'],
+      ['Pseudocode','Informal English-like algorithm description']]},
+
+  {t:'datatypes',title:'Pascal Data Types',
+   p:[['Integer','Whole numbers like −32768 to 32767'],
+      ['Real','Decimal / floating-point numbers like 3.14'],
+      ['Boolean','Stores TRUE or FALSE only'],
+      ['Char','A single character like A or 5'],
+      ['String','A sequence of characters / text'],
+      ['Const','A named value that never changes at runtime']]},
+
+  {t:'operators',title:'Pascal Operators',
+   p:[[':=','Assignment — stores a value into a variable'],
+      ['div','Integer division — returns the whole quotient'],
+      ['mod','Modulo — returns the remainder after division'],
+      ['<>','Not equal to'],
+      ['AND','Logical AND — TRUE only if both operands TRUE'],
+      ['OR','Logical OR — TRUE if at least one operand TRUE']]},
+
+  {t:'selection',title:'Pascal Selection',
+   p:[['IF-THEN-ELSE','Basic two-path selection statement'],
+      ['CASE','Multi-branch selection on an ordinal value'],
+      ['ELSE','Alternative block when IF condition is FALSE'],
+      ['BEGIN-END','Block delimiters for multiple statements'],
+      ['Nested IF','An IF statement inside another IF'],
+      ['END','Keyword that closes a CASE statement']]},
+
+  {t:'repetition',title:'Pascal Loops',
+   p:[['FOR-TO','Counting loop with known iteration count'],
+      ['WHILE-DO','Checks condition BEFORE executing body'],
+      ['REPEAT-UNTIL','Checks condition AFTER executing body'],
+      ['DOWNTO','Decrements the FOR loop counter'],
+      ['Infinite loop','Loop whose condition never becomes FALSE'],
+      ['UNTIL','Keyword ending REPEAT loop with exit condition']]},
+
+  {t:'nested',title:'Arrays & Nested Structures',
+   p:[['array[1..10] of Integer','Array of 10 integers indexed 1 to 10'],
+      ['Nested loop','A loop placed inside another loop'],
+      ['Matrix','A 2D array with rows and columns'],
+      ['marks[3]','Access the 3rd element of array marks'],
+      ['Outer loop','Controls how many times the inner loop runs'],
+      ['Inner loop','Runs completely for each outer iteration']]},
+
+  {t:'subprog',title:'Sub-programs',
+   p:[['Procedure','Sub-program that performs actions, returns no value'],
+      ['Function','Sub-program that returns a single value'],
+      ['Parameter','Input value passed to a sub-program'],
+      ['PROCEDURE','Keyword beginning a procedure definition'],
+      ['FUNCTION','Keyword beginning a function definition'],
+      ['Return type','The data type a function gives back']]},
+
+  {t:'identifiers',title:'Pascal Basics',
+   p:[['Identifier','Programmer-chosen name for a variable or procedure'],
+      ['Reserved word','Keyword with special meaning — cannot be used as identifier'],
+      ['BEGIN','Opens the main program block'],
+      ['end.','Closes the main program (must end with period)'],
+      ['Read','Built-in procedure to input a value from keyboard'],
+      ['Writeln','Built-in procedure to output text and a newline']]},
 ];
 
+// ── SPEED (TRUE/FALSE) ──
 const SPEED=[
-  {t:'java',q:'`this` refers to the current class, not the object.',a:false,e:'<code>this</code> = current <strong>object instance</strong>.'},
-  {t:'java',q:'`finally` runs only when an exception occurs.',a:false,e:'<code>finally</code> runs regardless of exceptions.'},
-  {t:'java',q:'Logger.severe() is for critical failures.',a:true,e:'SEVERE = critical. INFO = normal. WARNING = potential issues.'},
-  {t:'networking',q:'IPv4 uses 32-bit addresses.',a:true,e:'32 bits in dotted-decimal (e.g., 192.168.1.1).'},
-  {t:'networking',q:'ARP maps MAC addresses to IP addresses.',a:false,e:'ARP maps <strong>IP → MAC</strong>, not the other way around.'},
-  {t:'networking',q:'TCP guarantees delivery and ordering.',a:true,e:'TCP: reliable, ordered. UDP: unreliable, unordered.'},
-  {t:'networking',q:'UDP is connection-oriented.',a:false,e:'UDP is <strong>connectionless</strong> (fire-and-forget).'},
-  {t:'networking',q:'CIDR replaced the classful addressing system.',a:true,e:'CIDR (1993) uses slash notation (/24) instead of rigid classes.'},
-  {t:'socket-string',q:'accept() on ServerSocket is non-blocking.',a:false,e:'<code>accept()</code> is <strong>blocking</strong>.'},
-  {t:'socket-string',q:'PrintWriter(stream, true) enables auto-flush.',a:true,e:'<code>true</code> = auto-flush. Data sent immediately.'},
-  {t:'socket-string',q:'Ports 0-1023 can be freely used by apps.',a:false,e:'Reserved for system services. Use 1024-65535.'},
-  {t:'socket-string',q:'ServerSocket is used for data transfer.',a:false,e:'ServerSocket only listens/accepts. <strong>Socket</strong> transfers data.'},
-  {t:'socket-byte',q:'`new String(buffer)` and `new String(buffer, 0, bytesRead)` are identical.',a:false,e:'<code>new String(buffer)</code> includes garbage from previous reads.'},
-  {t:'socket-byte',q:'read(buffer) returns -1 on disconnect.',a:true,e:'-1 = end-of-stream (client disconnected).'},
-  {t:'threading',q:'Calling .run() instead of .start() creates a new thread.',a:false,e:'<code>.run()</code> runs on the current thread. Only <code>.start()</code> creates a new one.'},
-  {t:'threading',q:'Each Java thread uses ~1MB stack memory.',a:true,e:'10,000 threads = 10GB RAM just for stacks.'},
-  {t:'threading',q:'TCP handshake: SYN, ACK, SYN-ACK.',a:false,e:'Correct: <strong>SYN → SYN-ACK → ACK</strong>.'},
-  {t:'threading',q:'SO_KEEPALIVE detects ghost connections.',a:true,e:'Sends periodic heartbeats to verify the peer is alive.'},
-  {t:'http',q:'sendResponseHeaders(405, -1) = 405 with no body.',a:true,e:'-1 = no response body.'},
-  {t:'http',q:'response.length() and response.getBytes().length always match.',a:false,e:'Characters vs bytes — differ for non-ASCII.'},
-  {t:'http',q:'server.setExecutor(null) uses multi-threading.',a:false,e:'null = default <strong>single-threaded</strong> executor.'},
-  {t:'http',q:'Response headers must be set BEFORE sendResponseHeaders().',a:true,e:'Once sent, headers are locked.'},
-  {t:'http',q:'HttpServer.create() is a constructor call.',a:false,e:'It\'s a <strong>static factory method</strong>, not a constructor.'},
-  {t:'rest',q:'REST uses verbs in URL paths (e.g., /createShipment).',a:false,e:'REST uses <strong>nouns</strong>. HTTP methods express the action.'},
-  {t:'rest',q:'JSON has less overhead than XML.',a:true,e:'No closing tags, no namespaces, no SOAP envelope.'},
-  {t:'rest',q:'SOAP is better suited for mobile apps.',a:false,e:'REST/JSON is preferred for mobile (lighter payload).'},
-  {t:'exam',q:'Socket TODO 14 needs PrintWriter(stream, false).',a:false,e:'Must be <code>true</code> for auto-flush.'},
-  {t:'exam',q:'HTTP TODO 12 sends status 200 for non-GET.',a:false,e:'Sends <strong>405</strong> Method Not Allowed.'},
-  {t:'exam',q:'exchange.getResponseBody() returns an OutputStream.',a:true,e:'Write bytes to it, then close().'},
-  {t:'arch',q:'In 3-tier, the client accesses the database directly.',a:false,e:'Middleware shields the database.'},
-  {t:'arch',q:'Microservices enable graceful degradation.',a:true,e:'If one service dies, others keep working.'},
+  // ANALYZE
+  {t:'analyze',q:'The "I" in IPO stands for Input.',a:true},
+  {t:'analyze',q:'The "P" in IPO stands for Print.',a:false},
+  {t:'analyze',q:'Problem analysis must be done before writing code.',a:true},
+  {t:'analyze',q:'A calculation formula belongs in the Input column of an IPO chart.',a:false},
+  {t:'analyze',q:'Output is what the program shows to the user.',a:true},
+  // ALGO
+  {t:'algo',q:'An algorithm must have a finite number of steps.',a:true},
+  {t:'algo',q:'An infinite loop satisfies the "finite" property of algorithms.',a:false},
+  {t:'algo',q:'There are 4 control structures in programming.',a:false},
+  {t:'algo',q:'Sequence means executing statements one after another.',a:true},
+  {t:'algo',q:'Selection allows the program to make decisions.',a:true},
+  {t:'algo',q:'Repetition is another word for a loop.',a:true},
+  {t:'algo',q:'"Unambiguous" means each step has exactly one interpretation.',a:true},
+  // FLOWCHART
+  {t:'flowchart',q:'A diamond shape in a flowchart represents a decision.',a:true},
+  {t:'flowchart',q:'A rectangle in a flowchart represents input or output.',a:false},
+  {t:'flowchart',q:'A parallelogram in a flowchart represents input or output.',a:true},
+  {t:'flowchart',q:'Pseudocode is a formal programming language.',a:false},
+  {t:'flowchart',q:'Arrows in a flowchart show the direction of execution.',a:true},
+  {t:'flowchart',q:'An oval represents Start or End in a flowchart.',a:true},
+  {t:'flowchart',q:'A rectangle is used for decision steps in a flowchart.',a:false},
+  // IDENTIFIERS
+  {t:'identifiers',q:'Pascal identifiers can start with a digit.',a:false},
+  {t:'identifiers',q:'Pascal identifiers are case-sensitive.',a:false},
+  {t:'identifiers',q:'BEGIN is a reserved word in Pascal.',a:true},
+  {t:'identifiers',q:'Identifiers can contain spaces.',a:false},
+  {t:'identifiers',q:'myVar and MYVAR refer to the same identifier in Pascal.',a:true},
+  {t:'identifiers',q:'Reserved words can be used as variable names in Pascal.',a:false},
+  // DATATYPES
+  {t:'datatypes',q:'Integer stores decimal numbers in Pascal.',a:false},
+  {t:'datatypes',q:'Real stores floating-point (decimal) numbers in Pascal.',a:true},
+  {t:'datatypes',q:'Boolean can hold only TRUE or FALSE.',a:true},
+  {t:'datatypes',q:'Char holds multiple characters.',a:false},
+  {t:'datatypes',q:'String is used for sequences of characters.',a:true},
+  {t:'datatypes',q:'You must use := to assign a value to a constant.',a:false},
+  {t:'datatypes',q:'A Char variable can hold exactly one character.',a:true},
+  // OPERATORS
+  {t:'operators',q:'The Pascal assignment operator is :=',a:true},
+  {t:'operators',q:'The = sign is used for assignment in Pascal.',a:false},
+  {t:'operators',q:'17 div 5 equals 3 in Pascal.',a:true},
+  {t:'operators',q:'17 mod 5 equals 3 in Pascal.',a:false},
+  {t:'operators',q:'<> means "not equal to" in Pascal.',a:true},
+  {t:'operators',q:'AND returns TRUE if at least one operand is TRUE.',a:false},
+  {t:'operators',q:'OR returns TRUE if at least one operand is TRUE.',a:true},
+  {t:'operators',q:'NOT TRUE evaluates to FALSE.',a:true},
+  // SELECTION
+  {t:'selection',q:'CASE statement is best for checking ranges of values.',a:false},
+  {t:'selection',q:'IF condition THEN requires parentheses in Pascal.',a:false},
+  {t:'selection',q:'CASE statements end with END in Pascal.',a:true},
+  {t:'selection',q:'If an IF condition is FALSE and there is no ELSE, the program crashes.',a:false},
+  {t:'selection',q:'Nested IF means an IF placed inside another IF.',a:true},
+  {t:'selection',q:'ELSE provides the alternative path when IF is FALSE.',a:true},
+  // REPETITION
+  {t:'repetition',q:'REPEAT-UNTIL always executes at least once.',a:true},
+  {t:'repetition',q:'WHILE-DO always executes at least once.',a:false},
+  {t:'repetition',q:'FOR i := 1 TO 10 DO executes the body 10 times.',a:true},
+  {t:'repetition',q:'DOWNTO increments the FOR loop counter.',a:false},
+  {t:'repetition',q:'UNTIL ends a REPEAT-UNTIL loop.',a:true},
+  {t:'repetition',q:'An infinite loop occurs when the WHILE condition is always TRUE.',a:true},
+  {t:'repetition',q:'WHILE-DO checks its condition after executing the body.',a:false},
+  // NESTED & ARRAYS
+  {t:'nested',q:'A nested loop has one loop inside another.',a:true},
+  {t:'nested',q:'A 2D array is also called a matrix.',a:true},
+  {t:'nested',q:'Array indices in Pascal always start at 0.',a:false},
+  {t:'nested',q:'array[1..10] of Integer declares 10 elements.',a:true},
+  {t:'nested',q:'IF statements cannot be nested in Pascal.',a:false},
+  {t:'nested',q:'Inner loop runs completely for each outer iteration.',a:true},
+  // SUBPROG
+  {t:'subprog',q:'A function in Pascal returns a value.',a:true},
+  {t:'subprog',q:'A procedure in Pascal returns a value.',a:false},
+  {t:'subprog',q:'PROCEDURE keyword is used to define a procedure.',a:true},
+  {t:'subprog',q:'A function definition must include a return type.',a:true},
+  {t:'subprog',q:'Parameters allow different values to be passed to sub-programs.',a:true},
+  {t:'subprog',q:'Procedures and functions are both called sub-programs.',a:true},
 ];
 
-const DEBUG=[
-  {t:'socket-string',code:'<span class="ty">PrintWriter</span> out = <span class="kw">new</span> <span class="ty">PrintWriter</span>(\n    clientSocket.<span class="fn">getOutputStream</span>()\n);\nout.<span class="fn">println</span>(<span class="st">"Hello"</span>);',
-   q:'Client never receives the message. Why?',c:['Missing semicolon','getOutputStream() is null','Missing true for auto-flush','println() doesn\'t send data'],a:2,h:'What does the second parameter to PrintWriter do?',
-   e:'Without <code>true</code>, PrintWriter buffers data and never flushes.'},
-  {t:'socket-byte',code:'<span class="kw">byte</span>[] buf = <span class="kw">new byte</span>[<span class="nm">1024</span>];\n<span class="kw">int</span> n = is.<span class="fn">read</span>(buf);\n<span class="ty">String</span> msg = <span class="kw">new</span> <span class="ty">String</span>(buf);',
-   q:'Extra garbage characters appear. What\'s wrong?',c:['Buffer too small','Use new String(buf, 0, n)','is.read() wrong','println adds chars'],a:1,h:'You\'re converting all 1024 bytes, but only N were filled.',
-   e:'Use <code>new String(buf, 0, n)</code> to limit to actually-received bytes.'},
-  {t:'threading',code:'<span class="ty">ClientHandler</span> h = <span class="kw">new</span> <span class="ty">ClientHandler</span>(sock);\n<span class="ty">Thread</span> t = <span class="kw">new</span> <span class="ty">Thread</span>(h);\nt.<span class="fn">run</span>();',
-   q:'Server handles only one client at a time. Why?',c:['Not Runnable','Thread constructor wrong','Use .start() not .run()','Missing synchronized'],a:2,h:'.run() doesn\'t create a new thread.',
-   e:'<code>.run()</code> runs on the current thread. <code>.start()</code> creates a new OS thread.'},
-  {t:'http',code:'<span class="ty">String</span> r = <span class="st">"Hello"</span>;\nexchange.<span class="fn">sendResponseHeaders</span>(<span class="nm">200</span>, r.<span class="fn">length</span>());\n<span class="ty">OutputStream</span> os = exchange.<span class="fn">getResponseBody</span>();\nos.<span class="fn">write</span>(r.<span class="fn">getBytes</span>());\nos.<span class="fn">close</span>();',
-   q:'Breaks with non-ASCII characters. Why?',c:['200 is wrong','getResponseBody() wrong','Use getBytes().length not length()','close() not needed'],a:2,h:'HTTP Content-Length is in bytes, not characters.',
-   e:'<code>.length()</code> = chars. <code>.getBytes().length</code> = bytes. Non-ASCII chars are multi-byte.'},
-  {t:'http',code:'exchange.<span class="fn">getResponseHeaders</span>().<span class="fn">set</span>(<span class="st">"Content-Type"</span>, <span class="st">"application/json"</span>);\nexchange.<span class="fn">sendResponseHeaders</span>(<span class="nm">200</span>, json.<span class="fn">getBytes</span>().length);\n<span class="ty">OutputStream</span> os = exchange.<span class="fn">getResponseBody</span>();\nos.<span class="fn">write</span>(json.<span class="fn">getBytes</span>());',
-   q:'Client hangs or gets incomplete response. What\'s missing?',c:['Missing import','Should be 201','OutputStream never closed','getResponseHeaders wrong'],a:2,h:'Every opened stream must be...',
-   e:'<code>os.close()</code> is missing — the response is never finalized.'},
-  {t:'threading',code:'<span class="kw">private static int</span> count = <span class="nm">0</span>;\n\n<span class="kw">public void</span> <span class="fn">handle</span>(<span class="ty">HttpExchange</span> ex) {\n    count++;\n    <span class="ty">String</span> r = <span class="st">"Requests: "</span> + count;\n}',
-   q:'Counter shows wrong values under load. Why?',c:['Should be String','Missing return','int++ not thread-safe; use AtomicInteger','handle() should be static'],a:2,h:'Two threads can read the same value simultaneously.',
-   e:'<code>int++</code> is not atomic. Use <code>AtomicInteger.incrementAndGet()</code>.'},
-  {t:'socket-string',code:'<span class="ty">ServerSocket</span> ss = <span class="kw">new</span> <span class="ty">ServerSocket</span>(<span class="nm">5000</span>);\n<span class="ty">Socket</span> c = ss.<span class="fn">accept</span>();\n<span class="cm">// handle client...</span>\nss.<span class="fn">close</span>();',
-   q:'After first client, no new ones can connect. Why?',c:['Port 5000 reserved','Close client, not serverSocket','accept() called once','Missing IOException'],a:1,h:'What happens when you close the server socket?',
-   e:'Closing <code>serverSocket</code> stops accepting. Close <code>clientSocket</code> instead.'},
-  {t:'http',code:'<span class="ty">String</span> q = exchange.<span class="fn">getRequestURI</span>().<span class="fn">getQuery</span>();\n<span class="ty">String</span>[] pairs = q.<span class="fn">split</span>(<span class="st">"&"</span>);',
-   q:'NullPointerException when visiting /greet without params. Why?',c:['split("&") wrong','getRequestURI() null','Check if query != null first','Loop incorrect'],a:2,h:'What does getQuery() return when there are no params?',
-   e:'<code>getQuery()</code> returns <code>null</code> with no params. Check <code>query != null</code> first.'},
-];
-
-// ═══════════════════════════════════════════════════
-//  PROCEDURAL QUESTION GENERATOR
-// ═══════════════════════════════════════════════════
-// ═══════════════════════════════════════════════════
-//  MASSIVE PROCEDURAL GENERATOR
-// ═══════════════════════════════════════════════════
-const _r=(a)=>a[Math.floor(Math.random()*a.length)];
-const _s=(a)=>[...a].sort(()=>Math.random()-.5);
-function _mc(correct,wrongs){const c=[correct,..._s(wrongs).slice(0,3)];const sh=_s(c);return{c:sh,a:sh.indexOf(correct)}}
-
-function genQuestions(){
-  const gen=[];
-
-  // ── CIDR with random IPs (7 prefix variants × random octets = huge variety) ──
-  [{p:24,u:254},{p:25,u:126},{p:26,u:62},{p:27,u:30},{p:28,u:14},{p:29,u:6},{p:30,u:2}].forEach(c=>{
-    const o1=_r([10,172,192]),o2=Math.floor(Math.random()*255),o3=Math.floor(Math.random()*255);
-    const net=`${o1}.${o2}.${o3}.0`;
-    const hb=32-c.p,total=Math.pow(2,hb);
-    const w=[c.u+2,c.u*2,total,c.u-2,c.u+4,total-1].filter(x=>x>0&&x!==c.u);
-    const m=_mc(String(c.u),w.map(String));
-    gen.push({t:'networking',q:`Network <code>${net}/${c.p}</code> — how many <strong>usable</strong> host addresses?`,
-      c:m.c,a:m.a,h:`Host bits = 32 - ${c.p} = ${hb}. Total = 2^${hb} = ${total}. Subtract 2.`,
-      e:`2^${hb} = ${total}. Minus network ID + broadcast = <strong>${c.u}</strong> usable.`,gen:true});
-    // bonus: ask for total addresses
-    const m2=_mc(String(total),[c.u,total+2,total*2,total-2].filter(x=>x>0&&x!==total).map(String));
-    gen.push({t:'networking',q:`Network <code>${o1}.${o2+1}.${o3}.0/${c.p}</code> — how many <strong>total</strong> addresses (including network & broadcast)?`,
-      c:m2.c,a:m2.a,h:`Total = 2^(host bits). Host bits = 32 - ${c.p}.`,
-      e:`Host bits = ${hb}. Total = 2^${hb} = <strong>${total}</strong> (includes network + broadcast).`,gen:true});
-    // bonus: ask for host bits
-    const m3=_mc(String(hb),[hb+1,hb-1,hb+2,c.p].filter(x=>x!==hb&&x>0).map(String));
-    gen.push({t:'networking',q:`For a <code>/${c.p}</code> subnet, how many host bits are there?`,
-      c:m3.c,a:m3.a,h:`Host bits = 32 minus the prefix length.`,
-      e:`32 - ${c.p} = <strong>${hb}</strong> host bits.`,gen:true});
-  });
-
-  // ── Status codes (what does X mean / which code for Y) ──
-  const codes=[{c:200,m:'OK',w:'Successful request'},{c:201,m:'Created',w:'After POST creates a resource'},
-    {c:400,m:'Bad Request',w:'Malformed client data'},{c:404,m:'Not Found',w:'Resource doesn\'t exist'},
-    {c:405,m:'Method Not Allowed',w:'Wrong HTTP method'},{c:500,m:'Internal Server Error',w:'Server crashed'}];
-  codes.forEach(sc=>{
-    // "What does code X mean?"
-    const others=codes.filter(x=>x.c!==sc.c);
-    const m1=_mc(sc.m,_s(others).slice(0,3).map(x=>x.m));
-    gen.push({t:'http',q:`HTTP <code>${sc.c}</code> means:`,c:m1.c,a:m1.a,
-      h:`Think about when a server returns ${sc.c}.`,e:`<strong>${sc.c}</strong> = ${sc.m}: ${sc.w}.`,gen:true});
-    // "Which code for scenario Y?"
-    const m2=_mc(String(sc.c),_s(others).slice(0,3).map(x=>String(x.c)));
-    gen.push({t:'http',q:`Which HTTP status code is correct: "${sc.w}"?`,c:m2.c,a:m2.a,
-      h:`Match the scenario to the right number.`,e:`"${sc.w}" → <strong>${sc.c} ${sc.m}</strong>.`,gen:true});
-  });
-
-  // ── Ports ──
-  [{p:80,s:'HTTP'},{p:443,s:'HTTPS'},{p:22,s:'SSH'},{p:25,s:'SMTP'},{p:21,s:'FTP'},{p:53,s:'DNS'}].forEach(pt=>{
-    const all=[{p:80,s:'HTTP'},{p:443,s:'HTTPS'},{p:22,s:'SSH'},{p:25,s:'SMTP'},{p:21,s:'FTP'},{p:53,s:'DNS'}];
-    // "What service on port X?"
-    const o=all.filter(x=>x.p!==pt.p);const m1=_mc(pt.s,_s(o).slice(0,3).map(x=>x.s));
-    gen.push({t:'networking',q:`Port <code>${pt.p}</code> is the default for:`,c:m1.c,a:m1.a,
-      h:`Well-known port in the 0-1023 range.`,e:`Port <strong>${pt.p}</strong> = <strong>${pt.s}</strong>.`,gen:true});
-    // "Which port for service Y?"
-    const m2=_mc(String(pt.p),_s(o).slice(0,3).map(x=>String(x.p)));
-    gen.push({t:'networking',q:`Which port number is used by <strong>${pt.s}</strong>?`,c:m2.c,a:m2.a,
-      h:`This is a reserved system port (0-1023).`,e:`<strong>${pt.s}</strong> uses port <strong>${pt.p}</strong>.`,gen:true});
-  });
-
-  // ── TODO identification (Socket Server) ──
-  const sTodos=[{n:1,d:'Define port number',code:'int port = 6666;'},{n:2,d:'Create ServerSocket',code:'new ServerSocket(port)'},
-    {n:3,d:'Infinite loop',code:'while (true) {'},{n:4,d:'Accept client',code:'serverSocket.accept()'},
-    {n:5,d:'Print connection message',code:'System.out.println(...)'},{n:6,d:'Create ClientHandler',code:'new ClientHandler(clientSocket)'},
-    {n:7,d:'Create Thread',code:'new Thread(handler)'},{n:8,d:'Start thread',code:'thread.start()'},
-    {n:9,d:'Initialize reader/writer to null',code:'in = null; out = null;'},
-    {n:10,d:'Get InputStream',code:'clientSocket.getInputStream()'},{n:11,d:'Wrap in InputStreamReader',code:'new InputStreamReader(...)'},
-    {n:12,d:'Wrap in BufferedReader',code:'new BufferedReader(...)'},{n:13,d:'Get OutputStream',code:'clientSocket.getOutputStream()'},
-    {n:14,d:'Wrap in PrintWriter with auto-flush',code:'new PrintWriter(stream, true)'},
-    {n:15,d:'Read loop until disconnect',code:'(inputLine = in.readLine()) != null'},
-    {n:17,d:'Echo response',code:'out.println("Echo: " + inputLine)'},{n:18,d:'Close client socket',code:'clientSocket.close()'},
-    {n:19,d:'Close BufferedReader',code:'if (in != null) in.close()'},{n:20,d:'Close PrintWriter',code:'if (out != null) out.close()'}];
-  // "What TODO number is X?"
-  _s(sTodos).slice(0,6).forEach(td=>{
-    const wrong=_s(sTodos.filter(x=>x.n!==td.n)).slice(0,3);
-    const m=_mc('TODO '+td.n,wrong.map(x=>'TODO '+x.n));
-    gen.push({t:'exam',q:`Socket Server: which TODO is "<strong>${td.d}</strong>"?`,c:m.c,a:m.a,
-      h:`The code is: <code>${esc(td.code)}</code>`,e:`"${td.d}" = <strong>TODO ${td.n}</strong>: <code>${esc(td.code)}</code>`,gen:true});
-  });
-  // "What does TODO X do?"
-  _s(sTodos).slice(0,6).forEach(td=>{
-    const wrong=_s(sTodos.filter(x=>x.n!==td.n)).slice(0,3);
-    const m=_mc(td.d,wrong.map(x=>x.d));
-    gen.push({t:'exam',q:`Socket Server TODO ${td.n} does:`,c:m.c,a:m.a,
-      h:`Think about step ${td.n} in the server setup sequence.`,e:`TODO ${td.n} = <strong>${td.d}</strong>: <code>${esc(td.code)}</code>`,gen:true});
-  });
-  // "What code goes in TODO X?"
-  _s(sTodos).slice(0,4).forEach(td=>{
-    const wrong=_s(sTodos.filter(x=>x.n!==td.n)).slice(0,3);
-    const m=_mc(td.code,wrong.map(x=>x.code));
-    gen.push({t:'exam',q:`Socket Server TODO ${td.n} ("${td.d}") — which code?`,c:m.c.map(x=>'<code>'+esc(x)+'</code>'),a:m.a,
-      h:`${td.d} — think about which Java API call this uses.`,e:`TODO ${td.n}: <code>${esc(td.code)}</code>`,gen:true});
-  });
-
-  // ── TODO identification (HTTP Server) ──
-  const hTodos=[{n:1,d:'Create HttpServer',code:'HttpServer.create(new InetSocketAddress(8000), 0)'},
-    {n:2,d:'Create context for /',code:'server.createContext("/", new RootHandler())'},
-    {n:3,d:'Create context for /data',code:'server.createContext("/data", new DataHandler())'},
-    {n:4,d:'Set executor to null',code:'server.setExecutor(null)'},{n:5,d:'Start server',code:'server.start()'},
-    {n:6,d:'Get request method',code:'exchange.getRequestMethod()'},{n:7,d:'Check if GET',code:'"GET".equals(method)'},
-    {n:8,d:'Send 200 with byte length',code:'sendResponseHeaders(200, response.getBytes().length)'},
-    {n:9,d:'Get response body stream',code:'exchange.getResponseBody()'},
-    {n:10,d:'Write response bytes',code:'os.write(response.getBytes())'},{n:11,d:'Close output stream',code:'os.close()'},
-    {n:12,d:'Send 405 for non-GET',code:'sendResponseHeaders(405, -1)'},
-    {n:13,d:'Guard clause for non-POST',code:'!"POST".equals(...) → 405, return'},
-    {n:14,d:'Get request headers',code:'exchange.getRequestHeaders()'},
-    {n:15,d:'Get User-Agent header',code:'headers.getFirst("User-Agent")'},
-    {n:16,d:'Get request body stream',code:'exchange.getRequestBody()'},
-    {n:17,d:'Read all body bytes',code:'is.readAllBytes()'},
-    {n:18,d:'Set Content-Type to JSON',code:'getResponseHeaders().set("Content-Type","application/json")'},
-    {n:19,d:'Send 200 for JSON response',code:'sendResponseHeaders(200, jsonResponse.getBytes().length)'},
-    {n:20,d:'Write JSON and close',code:'os.write(...); os.close()'}];
-  _s(hTodos).slice(0,6).forEach(td=>{
-    const wrong=_s(hTodos.filter(x=>x.n!==td.n)).slice(0,3);
-    const m=_mc('TODO '+td.n,wrong.map(x=>'TODO '+x.n));
-    gen.push({t:'exam',q:`HTTP Server: which TODO is "<strong>${td.d}</strong>"?`,c:m.c,a:m.a,
-      h:`Code: <code>${esc(td.code)}</code>`,e:`"${td.d}" = <strong>TODO ${td.n}</strong>`,gen:true});
-  });
-  _s(hTodos).slice(0,6).forEach(td=>{
-    const wrong=_s(hTodos.filter(x=>x.n!==td.n)).slice(0,3);
-    const m=_mc(td.d,wrong.map(x=>x.d));
-    gen.push({t:'exam',q:`HTTP Server TODO ${td.n} does:`,c:m.c,a:m.a,
-      h:`Think about step ${td.n} in the HTTP handler flow.`,e:`TODO ${td.n} = <strong>${td.d}</strong>`,gen:true});
-  });
-
-  // ── TCP vs UDP (all attributes, randomized) ──
-  [{q:'guarantees delivery',a:'TCP'},{q:'is connectionless',a:'UDP'},{q:'requires a 3-way handshake',a:'TCP'},
-   {q:'is used for video streaming',a:'UDP'},{q:'maintains packet ordering',a:'TCP'},{q:'is fire-and-forget',a:'UDP'},
-   {q:'retransmits lost packets',a:'TCP'},{q:'is used for DNS lookups',a:'UDP'},{q:'is used for HTTP',a:'TCP'},
-   {q:'is used for gaming (low latency)',a:'UDP'},{q:'has lower latency',a:'UDP'},{q:'is used for email (SMTP)',a:'TCP'},
-   {q:'is used for VOIP',a:'UDP'},{q:'is used for file transfer (FTP)',a:'TCP'},
-   {q:'allows packets to arrive out of order',a:'UDP'},{q:'provides flow control',a:'TCP'}].forEach(at=>{
-    gen.push({t:'threading',q:`Which protocol ${at.q}?`,c:_r([['TCP','UDP','Both','Neither'],['UDP','TCP','Neither','Both']]),
-      a:at.a==='TCP'?(_r([0,1])===0?0:1):(_r([0,1])===0?0:1),gen:true,
-      h:'TCP = reliable/ordered. UDP = fast/unreliable.',e:`<strong>${at.a}</strong> ${at.q}.`});
-    // fix the answer index properly
-    const ch=['TCP','UDP','Both','Neither'];const sh=_s(ch);
-    gen[gen.length-1].c=sh;gen[gen.length-1].a=sh.indexOf(at.a);
-  });
-
-  // ── "What class/method does X?" ──
-  const apis=[
-    {t:'socket-string',q:'listens for incoming TCP connections',a:'ServerSocket',w:['Socket','ClientSocket','HttpServer']},
-    {t:'socket-string',q:'blocks until a client connects',a:'accept()',w:['connect()','listen()','bind()']},
-    {t:'socket-string',q:'converts raw bytes to characters',a:'InputStreamReader',w:['BufferedReader','PrintWriter','OutputStream']},
-    {t:'socket-string',q:'provides readLine() for line-by-line reading',a:'BufferedReader',w:['InputStreamReader','Scanner','InputStream']},
-    {t:'socket-string',q:'sends text with auto-flush',a:'PrintWriter',w:['BufferedWriter','OutputStream','DataOutputStream']},
-    {t:'http',q:'creates an HTTP server bound to a port',a:'HttpServer.create()',w:['new HttpServer()','HttpServer.bind()','HttpServer.listen()']},
-    {t:'http',q:'maps a URL path to a handler',a:'createContext()',w:['addRoute()','mapPath()','registerHandler()']},
-    {t:'http',q:'gets the HTTP method of a request',a:'getRequestMethod()',w:['getMethod()','requestType()','getHTTPMethod()']},
-    {t:'http',q:'commits response status and headers',a:'sendResponseHeaders()',w:['writeHeaders()','commitResponse()','setStatus()']},
-    {t:'http',q:'returns the response output stream',a:'getResponseBody()',w:['getOutputStream()','responseStream()','getWriter()']},
-    {t:'threading',q:'creates a critical section for thread safety',a:'synchronized',w:['volatile','atomic','concurrent']},
-    {t:'threading',q:'waits for another thread to finish',a:'join()',w:['wait()','sleep()','yield()']},
-    {t:'threading',q:'provides a thread-safe counter',a:'AtomicInteger',w:['int','Integer','SyncCounter']},
-    {t:'threading',q:'manages a fixed pool of reusable threads',a:'ExecutorService',w:['ThreadGroup','ThreadManager','ThreadPool']},
-    {t:'java',q:'refers to the current object instance',a:'this',w:['self','super','class']},
-    {t:'java',q:'runs cleanup code regardless of exceptions',a:'finally',w:['catch','throw','assert']},
-  ];
-  _s(apis).slice(0,10).forEach(api=>{
-    const m=_mc(api.a,api.w);
-    gen.push({t:api.t,q:`Which Java class/keyword ${api.q}?`,c:m.c,a:m.a,
-      h:`Think about the specific API for this task.`,e:`<strong>${api.a}</strong> ${api.q}.`,gen:true});
-  });
-
-  // ── "What happens if..." scenario questions ──
-  const scenarios=[
-    {t:'socket-string',q:'you forget <code>true</code> in <code>new PrintWriter(stream)</code>?',a:'Data is buffered and never sent to the client',
-      w:['A compilation error occurs','The server crashes','Data is sent encrypted'],h:'Auto-flush sends data immediately.'},
-    {t:'socket-byte',q:'you use <code>new String(buffer)</code> instead of <code>new String(buffer, 0, bytesRead)</code>?',
-      a:'Garbage characters from previous reads appear',w:['The program crashes','Data is lost','Nothing different happens'],h:'Buffer is 1024 bytes, message might be 5.'},
-    {t:'threading',q:'you call <code>thread.run()</code> instead of <code>thread.start()</code>?',
-      a:'Code runs on the current thread — no concurrency',w:['A new thread is created','The program crashes','The thread runs twice'],h:'.run() doesn\'t create a new OS thread.'},
-    {t:'http',q:'you use <code>response.length()</code> instead of <code>response.getBytes().length</code> for sendResponseHeaders?',
-      a:'Content-Length mismatch for non-ASCII characters',w:['Compilation error','Server crashes','No difference'],h:'Characters vs bytes differ for multi-byte chars.'},
-    {t:'http',q:'you forget to call <code>os.close()</code> on the response body?',
-      a:'The response may never reach the client',w:['Server crashes','Nothing happens','Data is encrypted'],h:'Closing commits the response.'},
-    {t:'socket-string',q:'you close <code>serverSocket</code> instead of <code>clientSocket</code> after handling a client?',
-      a:'The server stops accepting any new connections',w:['Only that client disconnects','Nothing happens','The server restarts'],h:'ServerSocket is the listener — closing it stops everything.'},
-    {t:'threading',q:'you create 10,000 threads without a thread pool?',
-      a:'~10GB RAM consumed just for stacks, plus heavy context-switching',w:['Java limits to 100 threads','Nothing bad happens','Threads share memory automatically'],h:'Each thread uses ~1MB of stack memory.'},
-    {t:'http',q:'you set response headers AFTER calling <code>sendResponseHeaders()</code>?',
-      a:'The headers are already committed and changes are ignored',w:['An exception is thrown','Headers are applied normally','The server restarts'],h:'Order: set headers → send headers → write body.'},
-    {t:'http',q:'you pass <code>-1</code> as the content length to <code>sendResponseHeaders()</code>?',
-      a:'No response body is sent (appropriate for error codes)',w:['Chunked encoding is used','An exception is thrown','1 byte is sent'],h:'-1 means no body.'},
-    {t:'exam',q:'readLine() returns <code>null</code> in the socket read loop?',
-      a:'The client has disconnected (end of stream)',w:['An empty message was sent','A timeout occurred','The server crashed'],h:'null = end-of-stream.'},
-    {t:'arch',q:'a mobile app connects directly to a database in a 2-tier setup?',
-      a:'Reverse-engineering exposes connection strings; SQL injection risk',w:['Better performance','Enhanced security','Automatic encryption'],h:'No middleware = no protection.'},
-    {t:'rest',q:'the Billing microservice crashes in an N-tier architecture?',
-      a:'Other services keep working; billing shows "temporarily unavailable"',w:['All services crash','The system restarts','Users are logged out'],h:'Graceful degradation.'},
-  ];
-  _s(scenarios).forEach(sc=>{
-    const m=_mc(sc.a,sc.w);
-    gen.push({t:sc.t,q:`What happens if ${sc.q}`,c:m.c,a:m.a,h:sc.h,
-      e:`${sc.a}.`,gen:true});
-  });
-
-  // ── "Fill the blank" style as MCQ ──
-  const blanks=[
-    {t:'socket-string',q:'Complete: <code>BufferedReader in = new BufferedReader(new _______(clientSocket.getInputStream()))</code>',
-      a:'InputStreamReader',w:['BufferedInputStream','DataInputStream','ObjectInputStream'],h:'Converts bytes to characters.'},
-    {t:'socket-string',q:'Complete: <code>PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), _____)</code>',
-      a:'true',w:['false','null','1'],h:'Enables auto-flush.'},
-    {t:'http',q:'Complete: <code>HttpServer server = HttpServer._______(new InetSocketAddress(8000), 0)</code>',
-      a:'create',w:['new','build','make'],h:'Static factory method.'},
-    {t:'http',q:'Complete: <code>exchange.sendResponseHeaders(200, response._______().length)</code>',
-      a:'getBytes',w:['toCharArray','toString','toByteArray'],h:'HTTP Content-Length needs byte count.'},
-    {t:'http',q:'Complete: <code>exchange.getResponseHeaders().set("_______", "application/json")</code>',
-      a:'Content-Type',w:['Accept','Content-Length','Authorization'],h:'Tells the client what format the body is in.'},
-    {t:'threading',q:'Complete: <code>_______ pool = Executors.newFixedThreadPool(100)</code>',
-      a:'ExecutorService',w:['ThreadPool','ThreadGroup','Executor'],h:'Interface for managing thread pools.'},
-    {t:'threading',q:'Complete: <code>socket.setSoTimeout(_____)</code> throws InterruptedIOException after that many ms.',
-      a:'5000',w:['0','-1','true'],h:'Milliseconds of silence before timeout.'},
-    {t:'arch',q:'Complete: <code>_______(lock) { /* critical section */ }</code>',
-      a:'synchronized',w:['volatile','atomic','locked'],h:'Java keyword for mutual exclusion.'},
-    {t:'exam',q:'Socket TODO 15: <code>while ((inputLine = in._______()) != null)</code>',
-      a:'readLine',w:['read','nextLine','getLine'],h:'BufferedReader method that reads a full line of text.'},
-    {t:'exam',q:'HTTP TODO 12: <code>exchange.sendResponseHeaders(_____, -1)</code> for non-GET requests.',
-      a:'405',w:['200','404','500'],h:'Method Not Allowed.'},
-  ];
-  _s(blanks).forEach(b=>{
-    const m=_mc(b.a,b.w);
-    gen.push({t:b.t,q:b.q,c:m.c,a:m.a,h:b.h,e:`The answer is <strong>${b.a}</strong>.`,gen:true});
-  });
-
-  // ── OSI / TCP-IP layer questions ──
-  const layers=[
-    {q:'Which layer handles routing and IP addressing?',a:'Network',w:['Transport','Data Link','Application'],t:'networking',h:'IP operates here.'},
-    {q:'Which layer provides end-to-end communication (TCP/UDP)?',a:'Transport',w:['Network','Session','Application'],t:'networking',h:'TCP and UDP live here.'},
-    {q:'Which layer deals with MAC addresses and switches?',a:'Data Link',w:['Physical','Network','Transport'],t:'networking',h:'Ethernet frames and MAC addresses.'},
-    {q:'HTTP, FTP, and SMTP operate at which layer?',a:'Application',w:['Transport','Presentation','Session'],t:'networking',h:'User-facing protocols.'},
-    {q:'Which model won the "protocol war" and powers the internet?',a:'TCP/IP',w:['OSI','ISO','IEEE'],t:'networking',h:'Practical > theoretical.'},
-  ];
-  _s(layers).forEach(l=>{
-    const m=_mc(l.a,l.w);
-    gen.push({t:l.t,q:l.q,c:m.c,a:m.a,h:l.h,e:`<strong>${l.a}</strong>.`,gen:true});
-  });
-
-  // ── SOAP vs REST ──
-  const soapRest=[
-    {q:'uses XML with SOAP envelope wrapping',a:'SOAP',w:['REST','GraphQL','gRPC']},
-    {q:'uses JSON as its primary payload format',a:'REST',w:['SOAP','XML-RPC','CORBA']},
-    {q:'has built-in ACID transaction support',a:'SOAP',w:['REST','GraphQL','gRPC']},
-    {q:'uses HTTP methods natively (GET/POST/PUT/DELETE)',a:'REST',w:['SOAP','WSDL','XML-RPC']},
-    {q:'requires a formal WSDL contract',a:'SOAP',w:['REST','JSON-RPC','GraphQL']},
-    {q:'is preferred for mobile apps due to lightweight payloads',a:'REST',w:['SOAP','CORBA','XML-RPC']},
-    {q:'is better suited for banking and financial systems',a:'SOAP',w:['REST','GraphQL','gRPC']},
-  ];
-  _s(soapRest).slice(0,4).forEach(sr=>{
-    const m=_mc(sr.a,sr.w);
-    gen.push({t:'rest',q:`Which web service style ${sr.q}?`,c:m.c,a:m.a,
-      h:'SOAP = formal/XML. REST = lightweight/JSON.',e:`<strong>${sr.a}</strong> ${sr.q}.`,gen:true});
-  });
-
-  return gen;
-}
-
-// ═══════════════════════════════════════════════════
-//  ANTI-REPEAT: track seen questions, cycle through all before repeating
-// ═══════════════════════════════════════════════════
+// ── ANTI-REPEAT ──
 let seenIds=new Set();
-let generatedQs=genQuestions();
-
-function qId(q){return(q.q||'').substring(0,80)+(q.a||'')}
-
+function qId(q){return(q.q||'').substring(0,80)+(q.a!==undefined?String(q.a):'')}
 function pickUnique(arr){
   let pool=filt(arr);
-  if(mode==='quiz'){pool=[...pool,...filt(generatedQs)]}
   if(!pool.length)pool=arr;
-  // try unseen first
   let unseen=pool.filter(q=>!seenIds.has(qId(q)));
-  if(!unseen.length){
-    // all seen — regenerate fresh questions and reset seen for this pool
-    generatedQs=genQuestions();
-    if(mode==='quiz')pool=[...filt(arr),...filt(generatedQs)];
-    seenIds.clear();
-    unseen=pool;
-    toast('Full cycle! All questions refreshed.');
-  }
+  if(!unseen.length){seenIds.clear();unseen=pool;toast('All questions done! Starting over.')}
   const q=unseen[Math.floor(Math.random()*unseen.length)];
-  seenIds.add(qId(q));
-  return q;
+  seenIds.add(qId(q));return q;
 }
 
-// ═══════════════════════════════════════════════════
-//  NAV & MODE
-// ═══════════════════════════════════════════════════
+// ── NAV & MODE ──
+const TOPICS=['analyze','algo','flowchart','identifiers','datatypes','operators','selection','repetition','nested','subprog','exam'];
+
 function nav(t){
   clearInterval(speedSt.timer);speedSt.timer=null;
   topic=t;
@@ -1101,46 +1108,42 @@ function setMode(m){
 }
 function $(id){return document.getElementById(id)}
 
-// ═══════════════════════════════════════════════════
-//  GAME ENGINE
-// ═══════════════════════════════════════════════════
+// ── GAME ENGINE ──
 function go(){
   clearInterval(speedSt.timer);speedSt.timer=null;
-  done=false;hints=Math.max(hints,0);
+  done=false;
   $('controls').style.display='flex';$('btnNext').style.display='none';
   $('btnCheck').style.display='';$('btnCheck').disabled=false;
-  $('btnHint').disabled=false;$('hintPill').textContent=hints+' hints';
-
-  const titles={quiz:'Concept Quiz',code:'Code Completion',match:'Pattern Matcher',speed:'Speed Round',debug:'Code Debug'};
-  const subs={quiz:'Pick the right answer',code:'Fill in the missing code',match:'Match concepts to definitions',speed:'True/False — beat the clock',debug:'Find the bug'};
+  $('btnHint').disabled=false;$('hintPill').textContent='hint';
+  const titles={quiz:'Concept Quiz',code:'Code Completion',match:'Pattern Matcher',speed:'Speed Round'};
+  const subs={quiz:'Pick the right answer',code:'Fill in the missing Pascal code',match:'Match concepts to definitions',speed:'True or False — beat the clock'};
   $('gTitle').textContent=titles[mode]||'Quiz';
   $('gSub').textContent=subs[mode]||'';
   buildChips();
-  if(mode==='quiz')loadQ();else if(mode==='code')loadC();else if(mode==='match')loadM();
-  else if(mode==='speed')startSpeed();else if(mode==='debug')loadD();
+  if(mode==='quiz')loadQ();
+  else if(mode==='code')loadC();
+  else if(mode==='match')loadM();
+  else if(mode==='speed')startSpeed();
 }
 
 function buildChips(){
-  const ts=[{id:'all',l:'All'},{id:'java',l:'Java'},{id:'networking',l:'Network'},{id:'arch',l:'Arch'},
-    {id:'socket-string',l:'Sock-Str'},{id:'socket-byte',l:'Sock-Byte'},{id:'threading',l:'Thread'},
-    {id:'http',l:'HTTP'},{id:'rest',l:'REST'},{id:'exam',l:'Exam'}];
+  const ts=[{id:'all',l:'All'},{id:'analyze',l:'IPO'},{id:'algo',l:'Algo'},{id:'flowchart',l:'Flow'},
+    {id:'identifiers',l:'Ident.'},{id:'datatypes',l:'Types'},{id:'operators',l:'Ops'},
+    {id:'selection',l:'IF/CASE'},{id:'repetition',l:'Loops'},{id:'nested',l:'Arrays'},
+    {id:'subprog',l:'SubProg'},{id:'exam',l:'Exam'}];
   $('chipBar').innerHTML=ts.map(t=>`<div class="chip${t.id===topic?' on':''}" onclick="topic='${t.id}';buildChips();go()">${t.l}</div>`).join('');
 }
 
 function filt(arr){return(topic==='all'||topic==='home')?arr:arr.filter(q=>q.t===topic)}
 function pick(arr){return pickUnique(arr)}
 
-// ═══════════════════════════════════════════════════
-//  QUIZ
-// ═══════════════════════════════════════════════════
+// ── QUIZ ──
 function loadQ(){
   const q=pick(QZ);curQ=q;done=false;
   $('btnNext').style.display='none';$('btnCheck').style.display='';$('btnCheck').disabled=false;
   $('btnHint').disabled=false;
-  const hardBadge=hardMode?'<span class="badge badge-bug">HARD</span>':'';
-  const genBadge=q.gen?'<span class="badge badge-gen">generated</span>':'';
   $('gameArea').innerHTML=`<div class="qcard">
-    <div class="qcard-hdr"><span class="badge badge-${q.t}">${q.t}</span>${genBadge}${hardBadge}</div>
+    <div class="qcard-hdr"><span class="badge badge-${q.t}">${q.t}</span></div>
     <div class="qtxt">${q.q}</div>
     <div class="choices" id="choices">${q.c.map((c,i)=>`<div class="ch" data-i="${i}" onclick="sel(this)"><div class="ch-ltr">${'ABCD'[i]}</div><div class="ch-txt">${c}</div></div>`).join('')}</div>
   </div>`;
@@ -1149,7 +1152,8 @@ function sel(el){if(done)return;document.querySelectorAll('.ch').forEach(c=>c.cl
 
 function check(){
   if(done)return;
-  if(mode==='quiz')chkQ();else if(mode==='code')chkC();else if(mode==='debug')chkD();
+  if(mode==='quiz')chkQ();
+  else if(mode==='code')chkC();
 }
 
 function chkQ(){
@@ -1163,34 +1167,30 @@ function chkQ(){
   result(ok,curQ.e,curQ.t);
 }
 
-// ═══════════════════════════════════════════════════
-//  CODE COMPLETION
-// ═══════════════════════════════════════════════════
+// ── CODE COMPLETION ──
 function loadC(){
   const q=pick(CODE);curQ=q;done=false;
   $('btnNext').style.display='none';$('btnCheck').style.display='';$('btnCheck').disabled=false;$('btnHint').disabled=false;
-  const ml=q.ans.includes('\n');
   $('gameArea').innerHTML=`<div class="qcard">
-    <div class="qcard-hdr"><span class="badge badge-exam">${q.cat} — TODO ${q.n}</span></div>
-    <div class="qtxt">Fill in <strong>TODO ${q.n}</strong>:</div>
-    <div class="codeblk" data-lang="java">${q.ctx}\n<div class="code-blank">${ml?
-    '<textarea class="code-input" id="ci" rows="3" placeholder="Type your answer..." spellcheck="false"></textarea>':
-    '<input class="code-input" id="ci" placeholder="Type your answer..." spellcheck="false" autocomplete="off">'}</div></div></div>`;
-  $('ci').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!done){e.preventDefault();chkC()}});
+    <div class="qcard-hdr"><span class="badge badge-${q.t}">${q.cat} — step ${q.n}</span></div>
+    <div class="qtxt">Fill in the missing Pascal line:</div>
+    <div class="codeblk" data-lang="pascal">${q.ctx}
+<div class="code-blank"><input class="code-input" id="ci" placeholder="Type Pascal code here..." spellcheck="false" autocomplete="off"></div></div></div>`;
+  $('ci').addEventListener('keydown',e=>{if(e.key==='Enter'&&!done){e.preventDefault();chkC()}});
   $('ci').focus();
 }
+
 function chkC(){
-  const v=$('ci').value.trim();if(!v)return;done=true;
-  const norm=s=>s.replace(/\s+/g,' ').replace(/;\s*$/,';').trim();
-  const ok=curQ.acc.some(a=>norm(v)===norm(a)||norm(v)===norm(a).replace(/;$/,''));
+  const v=$('ci').value;if(!v.trim())return;done=true;
+  const norm=s=>s.replace(/\s+/g,' ').replace(/;\s*$/,'').trim().toLowerCase();
+  const nv=norm(v);
+  const ok=norm(curQ.ans)===nv||curQ.acc.some(a=>norm(a)===nv);
   $('ci').style.color=ok?'var(--green)':'var(--red)';$('ci').readOnly=true;
   if(!ok)$('gameArea').innerHTML+=`<div style="margin-top:10px;font-size:.72rem;color:var(--text-dim)">Expected: <code style="color:var(--green)">${esc(curQ.ans)}</code></div>`;
   result(ok,curQ.e,curQ.t);
 }
 
-// ═══════════════════════════════════════════════════
-//  PATTERN MATCHER
-// ═══════════════════════════════════════════════════
+// ── PATTERN MATCHER ──
 function loadM(){
   const pool=(topic==='all'||topic==='home')?MATCH:MATCH.filter(s=>s.t===topic);
   const set=pool.length?pool[Math.floor(Math.random()*pool.length)]:MATCH[0];
@@ -1199,7 +1199,7 @@ function loadM(){
   matchSt={left:null,pairs:set.p,matched:0,total:set.p.length};
   $('gameArea').innerHTML=`<div class="qcard">
     <div class="qcard-hdr"><span class="badge badge-${set.t}">${set.title}</span><span class="qnum"><span id="mc">0</span>/${set.p.length}</span></div>
-    <div class="qtxt">Click a concept, then its matching definition.</div>
+    <div class="qtxt">Click a term, then its matching definition.</div>
     <div class="match-grid"><div class="match-col" id="ml">${set.p.map((p,i)=>`<div class="mi" data-s="l" data-i="${i}" onclick="mclk(this)">${p[0]}</div>`).join('')}</div>
     <div class="match-mid">${set.p.map(()=>'&rarr;').join('')}</div>
     <div class="match-col" id="mr">${sr.map(p=>`<div class="mi" data-s="r" data-v="${esc(p[1])}" onclick="mclk(this)">${p[1]}</div>`).join('')}</div></div></div>`;
@@ -1226,9 +1226,7 @@ function mclk(el){
   }
 }
 
-// ═══════════════════════════════════════════════════
-//  SPEED ROUND
-// ═══════════════════════════════════════════════════
+// ── SPEED ROUND ──
 function startSpeed(){
   let pool=filt(SPEED);if(pool.length<5)pool=SPEED;
   const qs=[...pool].sort(()=>Math.random()-.5).slice(0,12);
@@ -1237,13 +1235,13 @@ function startSpeed(){
 }
 function showSQ(){
   if(speedSt.qi>=speedSt.qs.length){showSR();return}
-  const q=speedSt.qs[speedSt.qi];speedSt.tl=hardMode?4000:8000;
+  const q=speedSt.qs[speedSt.qi];speedSt.tl=8000;
   $('gameArea').innerHTML=`<div class="qcard">
     <div class="qcard-hdr"><span class="badge badge-${q.t}">${q.t}</span><span class="qnum">${speedSt.qi+1}/${speedSt.tot}</span></div>
     <div class="speed-bar"><div class="speed-fill" id="sf" style="width:100%"></div></div>
     <div class="qtxt" style="font-size:.95rem;text-align:center;padding:18px 0">${q.q}</div>
     <div class="speed-btns"><button class="sbtn t" onclick="sAns(true)">TRUE</button><button class="sbtn f" onclick="sAns(false)">FALSE</button></div></div>`;
-  clearInterval(speedSt.timer);const st=Date.now();const dur=hardMode?4000:8000;
+  clearInterval(speedSt.timer);const st=Date.now(),dur=8000;
   speedSt.timer=setInterval(()=>{
     const e=Date.now()-st,p=Math.max(0,(1-e/dur)*100);
     const b=$('sf');if(b)b.style.width=p+'%';
@@ -1264,49 +1262,29 @@ function showSR(){
   const p=Math.round(speedSt.ok/speedSt.tot*100);
   $('gameArea').innerHTML=`<div class="qcard"><div class="sres">
     <div class="big">${p}%</div><div class="sub">Speed Round Complete</div>
-    <div class="bd"><div class="bdi"><div class="bdv" style="color:var(--green)">${speedSt.ok}</div><div class="bdl">Correct</div></div>
-    <div class="bdi"><div class="bdv" style="color:var(--red)">${speedSt.no}</div><div class="bdl">Wrong</div></div>
-    <div class="bdi"><div class="bdv" style="color:var(--amber)">${speedSt.ok*10}</div><div class="bdl">XP</div></div></div>
-    <div class="btn-row" style="justify-content:center;margin-top:24px"><button class="btn btn-go" onclick="go()">Play Again</button></div></div></div>`;
+    <div class="bd">
+      <div class="bdi"><div class="bdv" style="color:var(--green)">${speedSt.ok}</div><div class="bdl">Correct</div></div>
+      <div class="bdi"><div class="bdv" style="color:var(--red)">${speedSt.no}</div><div class="bdl">Wrong</div></div>
+      <div class="bdi"><div class="bdv" style="color:var(--amber)">${speedSt.ok*10}</div><div class="bdl">XP</div></div>
+    </div>
+    <div class="btn-row" style="justify-content:center;margin-top:24px">
+      <button class="btn btn-go" onclick="go()">Play Again</button>
+    </div></div></div>`;
   if(p>=80)confetti();
 }
 
-// ═══════════════════════════════════════════════════
-//  DEBUG
-// ═══════════════════════════════════════════════════
-function loadD(){
-  const q=pick(DEBUG);curQ=q;done=false;
-  $('btnNext').style.display='none';$('btnCheck').style.display='';$('btnCheck').disabled=false;$('btnHint').disabled=false;
-  $('gameArea').innerHTML=`<div class="qcard">
-    <div class="qcard-hdr"><span class="badge badge-${q.t}">${q.t}</span><span class="badge badge-bug">BUG HUNT</span></div>
-    <div class="codeblk" data-lang="java">${q.code}</div>
-    <div class="qtxt">${q.q}</div>
-    <div class="choices" id="choices">${q.c.map((c,i)=>`<div class="ch" data-i="${i}" onclick="sel(this)"><div class="ch-ltr">${'ABCD'[i]}</div><div class="ch-txt">${c}</div></div>`).join('')}</div></div>`;
-}
-function chkD(){
-  const s=document.querySelector('.ch.sel');if(!s)return;done=true;
-  const i=+s.dataset.i,ok=i===curQ.a;
-  document.querySelectorAll('.ch').forEach(c=>{if(+c.dataset.i===curQ.a)c.classList.add('correct');if(+c.dataset.i===i&&!ok)c.classList.add('wrong')});
-  result(ok,curQ.e,curQ.t);
-}
-
-// ═══════════════════════════════════════════════════
-//  HINTS
-// ═══════════════════════════════════════════════════
+// ── HINT ──
 function useHint(){
   if(done||!curQ)return;
-  const h=curQ.h||'No hint available for this question.';
+  const h=curQ.h||'No hint available.';
   const existing=$('gameArea').querySelector('.hint-box');
   if(existing)existing.remove();
   $('gameArea').querySelector('.qcard').insertAdjacentHTML('beforeend',`<div class="hint-box"><strong>Hint:</strong> ${h}</div>`);
 }
 
-// ═══════════════════════════════════════════════════
-//  RESULTS & XP
-// ═══════════════════════════════════════════════════
+// ── RESULTS & XP ──
 function result(ok,explain,tp){
-  const mult=hardMode?2:1;
-  const pts=ok?(mode==='code'?25*mult:15*mult):0;
+  const pts=ok?(mode==='code'?25:15):0;
   if(ok){streak++;addXP(pts);confetti()}else{
     streak=0;
     if(S.wrongs.length>=10)S.wrongs.shift();
@@ -1315,34 +1293,28 @@ function result(ok,explain,tp){
   record(tp,ok);
   $('btnCheck').style.display='none';$('btnNext').style.display='';$('controls').style.display='flex';$('btnHint').disabled=true;
   const richExplain=buildRichExplain(explain,tp,ok);
-  $('gameArea').innerHTML+=`<div class="result ${ok?'ok':'no'}">${ok?'Correct!':'Incorrect'}${streak>2?` <span style="font-size:.6rem;margin-left:6px">${streak}x streak</span>`:''}<span class="pts">${ok?'+'+pts+' XP':'+0 XP'}${hardMode?' (2x)':''}</span></div>
+  $('gameArea').innerHTML+=`<div class="result ${ok?'ok':'no'}">${ok?'Correct!':'Incorrect'}${streak>2?` <span style="font-size:.6rem;margin-left:6px">${streak}x streak</span>`:''}<span class="pts">${ok?'+'+pts+' XP':'+0 XP'}</span></div>
     <div class="explain">${richExplain}</div>`;
 }
 
 function buildRichExplain(base,tp,ok){
-  // Build a comprehensive, teaching-style explanation
-  const topicContext={
-    'java':'<strong>Java Fundamentals</strong> — These are the building blocks of every Java program. Understanding OOP, exception handling, and proper logging is essential before moving to networking.',
-    'networking':'<strong>Networking</strong> — These concepts form the foundation of how computers communicate. Understanding protocols, addressing, and the layered model is critical for socket and HTTP programming.',
-    'arch':'<strong>Architecture</strong> — Knowing tier patterns helps you understand why middleware exists and how to design scalable, secure systems. This directly applies to how your servers are structured.',
-    'socket-string':'<strong>Socket Programming (String I/O)</strong> — The stream wrapping chain (InputStream → InputStreamReader → BufferedReader) is the most-tested pattern in the exam. Memorize it cold.',
-    'socket-byte':'<strong>Socket Programming (Byte I/O)</strong> — Byte streams give you raw control. The key pitfall is <code>new String(buffer)</code> vs <code>new String(buffer, 0, bytesRead)</code> — always specify the range.',
-    'threading':'<strong>Multi-Threading & Concurrency</strong> — Thread-per-connection is the standard server pattern. Remember: <code>.start()</code> creates a thread, <code>.run()</code> does NOT. Use ExecutorService for production.',
-    'http':'<strong>HTTP Servers</strong> — The handler pattern (check method → set headers → send headers → write body → close) is always the same. <code>getBytes().length</code>, not <code>length()</code>.',
-    'rest':'<strong>REST & Web Services</strong> — REST uses nouns in URLs, HTTP methods for actions, and JSON for data. SOAP is XML-heavy and better for enterprise/banking.',
-    'exam':'<strong>Exam Pattern</strong> — The mock exam has 20 TODOs each for Socket Server and HTTP Server. Knowing the exact code and order is worth 100 marks total.'
+  const ctx={
+    analyze:'<strong>Problem Analysis (1.1)</strong> — Understanding the problem with an IPO chart is the essential first step before any algorithm or code.',
+    algo:'<strong>Algorithms (1.2)</strong> — Algorithms must be finite, unambiguous, and effective. The three control structures (Sequence, Selection, Repetition) appear in every program.',
+    flowchart:'<strong>Flowcharts &amp; Pseudocode (1.3)</strong> — Flowcharts use standard shapes: diamond=decision, rectangle=process, parallelogram=I/O, oval=start/end.',
+    identifiers:'<strong>Identifiers &amp; Structure (1.4.1)</strong> — Pascal is case-insensitive. Identifiers must start with a letter. Reserved words cannot be used as identifiers.',
+    datatypes:'<strong>Data Types (1.4.2)</strong> — Choose the right type: Integer for whole numbers, Real for decimals, Boolean for TRUE/FALSE, Char for one character, String for text.',
+    operators:'<strong>Operators (1.4.3)</strong> — Remember: := for assignment, div for integer quotient, mod for remainder, &lt;&gt; for not-equal.',
+    selection:'<strong>Selection (1.4.4)</strong> — Use IF-THEN-ELSE for range checks, CASE for matching specific ordinal values. CASE ends with END.',
+    repetition:'<strong>Repetition (1.4.5)</strong> — FOR when count is known; WHILE when condition checked first; REPEAT when body must run at least once.',
+    nested:'<strong>Arrays &amp; Nested (1.4)</strong> — Arrays: <code>var a : array[1..n] of Type;</code>. Nested loops: inner runs fully for each outer iteration.',
+    subprog:'<strong>Sub-programs (1.5)</strong> — Procedures perform actions (no return). Functions calculate and return a value. Both accept parameters.',
+    exam:'<strong>Exam Practice</strong> — Key traps: := vs =, div vs mod, REPEAT vs WHILE, function vs procedure, end. vs end;'
   };
   let rich=`<div style="margin-bottom:10px">${base}</div>`;
   if(!ok){
     rich+=`<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);color:var(--text-dim);font-size:.68rem;line-height:1.7">
-      <strong style="color:var(--cyan)">Why this matters:</strong> ${topicContext[tp]||'Understanding this concept is important for the exam.'}</div>`;
-  }
-  // Add exam tip for exam questions
-  if(tp==='exam'&&curQ){
-    const todoNum=curQ.n||curQ.todoNum||(curQ.q&&curQ.q.match(/TODO (\d+)/)?.[1]);
-    if(todoNum){
-      rich+=`<div style="margin-top:8px;font-size:.68rem;color:var(--amber)">Exam tip: TODO ${todoNum} is worth marks. Practice writing it from memory until it\'s automatic.</div>`;
-    }
+      <strong style="color:var(--cyan)">Topic context:</strong> ${ctx[tp]||'Review this section in your textbook.'}</div>`;
   }
   return rich;
 }
@@ -1355,41 +1327,32 @@ function addXP(n){
 function record(tp,ok){
   S.ans++;if(ok)S.cor++;
   if(!S.ts[tp])S.ts[tp]={a:0,c:0};S.ts[tp].a++;if(ok)S.ts[tp].c++;
-  // track unique questions seen per topic
-  if(!S.uniqueSeen[tp])S.uniqueSeen[tp]=0;
-  S.uniqueSeen[tp]++;
+  if(!S.uniqueSeen[tp])S.uniqueSeen[tp]=0;S.uniqueSeen[tp]++;
   save();ui();
 }
 function next(){go()}
 
-// ═══════════════════════════════════════════════════
-//  UI
-// ═══════════════════════════════════════════════════
+// ── UI ──
 function ui(){
   $('xpNum').textContent=S.xp;$('lvlNum').textContent=S.lv;
   $('xpBar').style.width=(S.xp%200)/200*100+'%';
   const sp=$('streakPill');
   if(streak>=2){sp.style.display='';sp.textContent=streak+'x'}else sp.style.display='none';
-  $('hintPill').textContent='hints';
   $('sAnswered').textContent=S.ans;$('sCorrect').textContent=S.cor;
   $('sAccuracy').textContent=S.ans?Math.round(S.cor/S.ans*100)+'%':'0%';
   $('sXP').textContent=S.xp;
 
-  // Comprehensive mastery: combines accuracy (70%) + coverage depth (30%)
-  // Coverage = unique questions answered in topic / target (15 per topic to "master")
-  const topicTargets={java:12,networking:16,arch:10,'socket-string':12,'socket-byte':8,threading:14,http:16,rest:10,exam:20};
-  ['java','networking','arch','socket-string','socket-byte','threading','http','rest','exam'].forEach(t=>{
+  const topicTargets={analyze:8,algo:8,flowchart:8,identifiers:8,datatypes:9,operators:10,selection:8,repetition:10,nested:8,subprog:6,exam:6};
+  TOPICS.forEach(t=>{
     const el=$('m-'+t);if(!el)return;const s=S.ts[t];
     if(!s||!s.a){el.textContent='--';el.className='sb-pct none';return}
-    const acc=s.c/s.a; // 0-1
-    const cov=Math.min(1,(S.uniqueSeen[t]||0)/(topicTargets[t]||15)); // 0-1
+    const acc=s.c/s.a;
+    const cov=Math.min(1,(S.uniqueSeen[t]||0)/(topicTargets[t]||10));
     const mastery=Math.round((acc*0.7+cov*0.3)*100);
     el.textContent=mastery+'%';
     el.className='sb-pct '+(mastery>=80?'hi':mastery>=50?'mid':'lo');
-    el.title=`Accuracy: ${Math.round(acc*100)}% | Coverage: ${Math.round(cov*100)}% (${S.uniqueSeen[t]||0}/${topicTargets[t]||15} questions)`;
   });
 
-  // recent wrongs on home
   const rw=$('recentWrongs');
   if(S.wrongs&&S.wrongs.length){
     rw.innerHTML=`<h4>Review These</h4>${S.wrongs.slice(-5).reverse().map(w=>
@@ -1419,28 +1382,18 @@ function confetti(){
   document.body.appendChild(el);setTimeout(()=>el.remove(),2000);
 }
 
-function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 
 ui();
 
-// ═══════════════════════════════════════════════════
-//  RGB COLOR CYCLING — shifts --green through hues like RGB lights
-// ═══════════════════════════════════════════════════
+// ── RGB COLOR CYCLING ──
 (function colorCycle(){
   const root=document.documentElement;
   function tick(){
     const t=Date.now()/2500;
-    let hue,sat,lit;
-    if(hardMode){
-      hue=355+25*Math.sin(t);
-      sat=80+15*Math.sin(t*1.3);
-      lit=55+12*Math.sin(t*0.7);
-      hue=((hue%360)+360)%360;
-    }else{
-      hue=140+45*Math.sin(t);
-      sat=85+15*Math.sin(t*1.7);
-      lit=55+10*Math.sin(t*0.9);
-    }
+    const hue=140+45*Math.sin(t);
+    const sat=85+15*Math.sin(t*1.7);
+    const lit=55+10*Math.sin(t*0.9);
     const main=`hsl(${hue},${sat}%,${lit}%)`;
     const dim=`hsl(${hue},${sat-10}%,${lit-12}%)`;
     const dark=`hsl(${hue},${sat-20}%,${lit-30}%)`;
@@ -1453,113 +1406,6 @@ ui();
   }
   tick();
 })();
-
-// ═══════════════════════════════════════════════════
-//  FIREBASE AUTH + CLOUD SYNC
-// ═══════════════════════════════════════════════════
-const firebaseConfig={
-  apiKey:"AIzaSyAPMuCttxW_FTTokyMayqTe8BDGzYmLwII",
-  authDomain:"netithanukamax.firebaseapp.com",
-  projectId:"netithanukamax",
-  storageBucket:"netithanukamax.firebasestorage.app",
-  messagingSenderId:"133524123268",
-  appId:"1:133524123268:web:8a9fbd7d7bce573f6f1cd1"
-};
-firebase.initializeApp(firebaseConfig);
-const auth=firebase.auth();
-const db=firebase.firestore();
-let fbUser=null;
-let syncTimeout=null;
-
-function signIn(){
-  const provider=new firebase.auth.GoogleAuthProvider();
-  auth.signInWithPopup(provider).catch(err=>{
-    if(err.code==='auth/popup-blocked'||err.code==='auth/popup-closed-by-user'){
-      auth.signInWithRedirect(provider);
-    }else{
-      toast('Sign in failed: '+err.message);
-    }
-  });
-}
-
-function signOut(){
-  if(confirm('Sign out? Local progress is kept.')){
-    auth.signOut();
-  }
-}
-
-auth.onAuthStateChanged(async user=>{
-  fbUser=user;
-  const area=$('authArea');
-  if(user){
-    area.innerHTML=`<img class="auth-avatar" src="${user.photoURL||''}" alt="${user.displayName||'User'}"
-      title="${user.displayName} — click to sign out" onclick="signOut()"
-      onerror="this.style.display='none'">
-      <span class="sync-dot" id="syncDot" title="Synced"></span>`;
-    await loadFromCloud();
-  }else{
-    area.innerHTML=`<button class="auth-btn" onclick="signIn()">Sign in</button>`;
-  }
-});
-
-async function loadFromCloud(){
-  if(!fbUser)return;
-  try{
-    const doc=await db.collection('progress').doc(fbUser.uid).get();
-    if(doc.exists){
-      const cloud=doc.data().state;
-      if(cloud&&cloud.xp!==undefined){
-        // merge: keep whichever has more XP (more progress)
-        if(cloud.xp>S.xp){
-          S=cloud;
-          if(!S.uniqueSeen)S.uniqueSeen={};
-          if(!S.wrongs)S.wrongs=[];
-          save();ui();
-          toast('Progress loaded from cloud');
-        }else if(S.xp>cloud.xp){
-          // local is ahead — push to cloud
-          await saveToCloud();
-          toast('Cloud updated with local progress');
-        }else{
-          toast('Synced');
-        }
-      }
-    }else{
-      // no cloud data yet — push local
-      await saveToCloud();
-      toast('Progress saved to cloud');
-    }
-  }catch(err){
-    console.error('Cloud load error:',err);
-    const dot=$('syncDot');if(dot)dot.classList.add('off');
-  }
-}
-
-async function saveToCloud(){
-  if(!fbUser)return;
-  try{
-    await db.collection('progress').doc(fbUser.uid).set({
-      state:JSON.parse(JSON.stringify(S)),
-      updated:firebase.firestore.FieldValue.serverTimestamp(),
-      name:fbUser.displayName||'',
-      email:fbUser.email||''
-    },{merge:true});
-    const dot=$('syncDot');if(dot){dot.classList.remove('off');dot.title='Synced'}
-  }catch(err){
-    console.error('Cloud save error:',err);
-    const dot=$('syncDot');if(dot)dot.classList.add('off');
-  }
-}
-
-// override save() to also sync to cloud (debounced)
-const _origSave=save;
-save=function(){
-  _origSave();
-  if(fbUser){
-    clearTimeout(syncTimeout);
-    syncTimeout=setTimeout(saveToCloud,3000); // batch saves, sync every 3s
-  }
-};
 </script>
 </body>
 </html>
